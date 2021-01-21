@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+	<ul
+		class="navbar-nav sidebarcolor sidebar-font sidebar sidebar-dark accordion border-right"
+		id="accordionSidebar" th:fragment="sidebar">
+
+		<!-- Sidebar - Brand -->
+
+
+		<!-- Divider -->
+		<hr class="sidebar-divider my-0">
+
+		<!-- Nav Item - Dashboard -->
+		<li class="nav-item active"><a class="nav-link" href="/"> <i
+				class="fas fa-fw fa-tachometer-alt fa-xs text-success"></i> <span
+				class="menu-collapsed">Dashboard</span>
+		</a></li>
+		<!-- Exporter Profile -->
+		
+		<li class="nav-item">
+			<a class="nav-link collapsed text-wrap" href="#"
+				data-toggle="collapse" data-target="#collapseProfile"
+				aria-expanded="true" aria-controls="collapseProfile">
+				<i class="fa fa-user-circle text-success"></i>
+				<span class="menu-collapsed text-wrap">Exporter</span>
+			</a>
+			<div id="collapseProfile" class="collapse" aria-labelledby="headingProfile"
+				data-parent="#accordionSidebar">
+				<div class="bg-white py-2 collapse-inner rounded">
+					<a class="collapse-item text-wrap" href="/exporter/registration/form">Register Exporter</a>
+					<a class="collapse-item text-wrap" href="/exporter/registration/pending">Verify Registration</a>
+					<!-- <a class="collapse-item text-wrap" href="/exporter/registration/">View Registrations</a> -->
+					<a class="collapse-item text-wrap" href="/exporter/profile/">Manage Profile</a> 
+					
+				</div>
+			</div>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link collapsed text-wrap" href="#"
+				data-toggle="collapse" data-target="#collapseProfile1"
+				aria-expanded="true" aria-controls="collapseProfile1">
+				<i class="fa fa-user-circle text-success"></i>
+				<span class="menu-collapsed text-wrap">Shipment Declaration</span>
+			</a>
+			<div id="collapseProfile1" class="collapse" aria-labelledby="headingProfile"
+				data-parent="#accordionSidebar">
+				<div class="bg-white py-2 collapse-inner rounded">
+					<a class="collapse-item text-wrap" href="/index">Add</a>
+					<a class="collapse-item text-wrap" href="/modify">Modify</a>
+					<!-- <a class="collapse-item text-wrap" href="/exporter/registration/">View Registrations</a> -->
+					<a class="collapse-item text-wrap" href="/exporter/profile/">Checklist</a> 
+					
+				</div>
+			</div>
+		</li>
+	
+		
+		<!-- Master Table -->
+		<!-- <li class="nav-item">
+			<a class="nav-link collapsed" href="#"
+				data-toggle="collapse" data-target="#collapseMaster"
+				aria-expanded="true" aria-controls="collapseMaster">
+				<i class="fa fa-database text-success"></i>
+				<span class="menu-collapsed">Master Tables</span>
+			</a>
+			<div id="collapseMaster" class="collapse" aria-labelledby="headingMaster"
+				data-parent="#accordionSidebar">
+				<div class="bg-white py-2 collapse-inner rounded">
+					<a class="collapse-item" href="/master/nob">LOV Master</a>
+					<a class="collapse-item" href="/master">Add Entry</a> <a
+						class="collapse-item" href="alertwithsm">View Data</a> <a
+						class="collapse-item" href="loaderwithsm">LoaderExamples</a>
+				</div>
+			</div>
+		</li> -->
+		<!-- Divider -->
+		<hr class="sidebar-divider d-none d-md-block">
+
+		<!-- Sidebar Toggler (Sidebar) -->
+		<div class="text-center d-none d-md-inline">
+			<button class="rounded-circle border-0 bg-dark"
+				data-toggle="sidebar-colapse" id="sidebarToggle"></button>
+		</div>
+
+	</ul>
+
+	<script th:src="|resources/js/datatablejs/jquery-3.3.1.js|"></script>
+
+
+	<!-- End of Sidebar -->
+
+
+
+
+</body>
+</html>

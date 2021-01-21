@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout}">
+<head>
+<meta charset="ISO-8859-1"/>
+<title>shipment declaration</title>
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+
+</head>
+<body>
+<div id="page-wrapper" layout:fragment="content">
+		<div class="card shadow mb-4 mt-2 border-left-info">
+
+			<!--card header-->
+			<div class="card-header py-3 ">
+				<div class="form -group row">
+					<div class="col-sm-12 mb-3 mb-sm-0">
+					
+						<h6 class="m-0 font-weight-bold text-primary" id="datatables">Modify Shipment Declaration</h6>
+					</div>
+					<!-- <div class="d-flex flex-row-reverse"> -->
+
+				</div>
+			</div>
+			<!--end of card header-->
+			<div class="card-body ">
+			
+			<form  action="">
+			 <div class="form-row">
+    <div class="form-group col-md-6">
+     <div class="form-group">
+    <label for="exampleFormControlSelect1">Declaration for(yyyy/mm):</label>&nbsp
+    <select class="form-control-inline form-control-sm" id="exampleFormControlSelect1">
+      <option>1</option>
+      <option>2</option>
+      <option>3</option>
+      <option>4</option>
+      <option>5</option>
+    </select>&nbsp/&nbsp
+   <select class="form-control-inline form-control-sm" id="exampleFormControlSelect1">
+      <option>1</option>
+      <option>2</option>
+      <option>3</option>
+      <option>4</option>
+      <option>5</option>
+    </select> 
+  </div>
+    </div>
+    </div>
+    <div class="form-row">
+     <div class="form-group-inline  col-md-4">
+      <label for="textpolicyno">Policy No :</label>&nbsp
+    <input id="textpolicyno" type="text"class="form-control" required/>
+     </div> <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+    </div>
+		<div class="form-row">
+		<div class="form-group-inline col-md-4">
+		<label>Exporter No.</label>
+		<input class="form-control" type="text">
+		</div>
+		<div class="form-group-inline col-md-4">
+		<label>Exporter Name</label>
+		<input type="text"class="form-control">
+		</div>
+		<div class="form-group-inline col-md-4">
+		<label>Declaration No.</label>
+		<input type="text"class="form-control" required>
+		</div>
+		</div>	
+			</form>
+			</div>
+		</div>
+
+		<!-- ACTUAL BODY CONTENT -->
+
+	</div>
+
+
+	<th:block layout:fragment="scripts">
+  		<!-- Data Tables -->
+	<script type="text/javascript" th:src="@{/webjars/startbootstrap-sb-admin-2/vendor/datatables/jquery.dataTables.min.js}"></script>
+	<script type="text/javascript" th:src="@{/webjars/startbootstrap-sb-admin-2/vendor/datatables/dataTables.bootstrap4.min.js}"></script>
+	<script type="text/javascript" th:src="@{/webjars/datatables-buttons/js/dataTables.buttons.min.js}"></script>
+	<script type="text/javascript" th:src="@{/webjars/datatables-buttons/js/buttons.html5.min.js}"></script>
+	<script type="text/javascript" th:src="@{/webjars/datatables-buttons/js/buttons.print.min.js}"></script>
+	<script type="text/javascript" th:src="@{/js/datatablejs/pdfmake.min.js}"></script>
+	<script type="text/javascript" th:src="@{/js/datatablejs/vfs_fonts.js}"></script>
+	<script type="text/javascript" th:src="@{/js/exporttable.js}"></script>
+	<script type="text/javascript" th:src="@{/js/buttonbootstrap4.js}"></script>
+  	
+	
+	</th:block>
+</body>
+</html>

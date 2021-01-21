@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout}">
+<head>
+<meta charset="ISO-8859-1" />
+<title>shipment declaration</title>
+
+<style type="text/css">
+.showhide {
+	display: none;
+}
+</style>
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script>
+	var list = [];
+
+	$(document).ready(function() {
+
+		$('input[type="radio"]').click(function() {
+			var inputValue = $(this).attr("value");
+			var targetBox = $("." + inputValue);
+			$(".showhide").not(targetBox).hide();
+			$(targetBox).show();
+		});
+		
+		
+		
+		
+		 function addRow () {
+		      let listName = 'ScrSepEtpSspBwpDecls'; //list name in Catalog.class
+		      let fieldsNames = ['shipmentDt',
+		    	  'grPpSbInvoiceNo',
+		    	  'commodityCd',
+		    	  'destCountryCd',
+		    	  'byrName',
+		    	  'byrAddrLine',
+		    	  'byrAddrStreet',
+		    	  'byrAddrCity',
+		    	  'byrAddrState',
+		    	  'byrCountryCd',
+		    	  'byrAddrPincode',
+		    	  'countryFromWhichPaymentToBeRecievedCd',
+		    	  'sourceCountryCd',
+		    	  'topId',
+		    	  'dueDtOfPayment',
+		    	  'realizationDt',
+		    	  'lcOpeningBankName',
+		    	  'lcOpeningBankAddrLine',
+		    	  'lcOpeningBankAddrStreet',
+		    	  'lcOpeningBankAddrCity',
+		    	  'lcOpeningBankAddrState',
+		    	  'lcOpeningBankAddrCountryCd',
+		    	  'lcOpeningBankAddrPincode']; //field names from Movie.class
+		    	  
+		    	  
+		    	  
+		      let rowIndex = document.querySelectorAll('.item').length; //we can add mock class to each movie-row
+		      let row = document.createElement('tr');
+		      row.classList.add('item')
+		      fieldsNames.forEach((fieldName) => {
+		          let col = document.createElement('td');
+		          let input = document.createElement('input');
+		          input.type = 'text';
+		          input.classList.add('form-control');
+		          input.id = listName + rowIndex + '.' + fieldName;
+		          input.setAttribute('name', listName + '[' + rowIndex + '].' + fieldName);
+		          col.appendChild(input);
+		          row.appendChild(col);
+		      });
+		      document.getElementById('tbody').appendChild(row);
+		};
+
+		/*  $('#manualForm').submit(function(event){
+		 	//console.log("list : ",abc);
+		 	event.preventDefault();
+		 	var obj={};
+		 	obj.dateOfShipment = document.getElementById('dateOfShipment').value;
+		  obj.invoiceNo= document.getElementById('invoiceNo').value;
+		  obj.commodity= $('#commodity').val();
+		  obj.country= $('#country').val();
+		  obj.buyerName= document.getElementById('buyerName').value;
+		  obj.buyerAddress= document.getElementById('buyerAddress').value;
+		  obj.buyerStreet= document.getElementById('buyerStreet').value;
+		  obj.buyerCity= document.getElementById('buyerCity').value;
+		  obj.buyerState= document.getElementById('buyerState').value;
+		  obj.buyerCountry= $('#buyerCountry').val();
+		  obj.buyerPostal= document.getElementById('buyerPostal').value;
+		  obj.paymentCountry= $('#paymentCountry').val();
+		  obj.sourceCountry= $('#sourceCountry').val();
+		  obj.top= $('#top').val();
+		  obj.dueDate= document.getElementById('dueDate').value;
+		  obj.dateOfRealization= document.getElementById('dateOfRealization').value;
+		  obj.bankName= document.getElementById('bankName').value;
+		  obj.bankAddress= document.getElementById('bankAddress').value;
+		  obj.bankStreet= document.getElementById('bankStreet').value;
+		  obj.bankCity  = document.getElementById('bankCity').value;
+		  obj.bankState= document.getElementById('bankState').value;
+		  obj.bankCountry= $('#bankCountry').val();
+		  obj.bankPostal= document.getElementById('bankPostal').value;
+		 
+		  console.log("********************"+obj.buyerCountry); 
+		  list.push(obj);
+			console.log("list1: "+list);
+		   var tbody = $('tbody');
+		 console.log("********************"+tbody);
+		
+		 var html="";
+		 console.log(html);
+		 $("tbody tr").remove();
+		 for(i=0;i<list.length;i++){
+		    html +='<tr>';
+		 	html+=' <td>'+list[i].dateOfShipment +'</td>';
+		    html+= '<td>'+list[i].invoiceNo +'</td>';
+		    html+='<td>'+list[i].commodity +'</td>';
+		    html+='<td>'+list[i].country +'</td>';
+		    html+='<td>'+list[i].buyerName +'</td>';
+		    html+='<td>'+list[i].buyerAddress +'</td>';
+		    html+='<td>'+list[i].buyerStreet +'</td>';
+		    html+='<td>'+list[i].buyerCity+'</td>';
+		    html+= '<td>'+list[i].buyerState +'</td>';
+		    html+='<td>'+list[i].buyerCountry  +'</td>';
+		    html+='<td>'+list[i].buyerPostal +'</td>';
+		    html+='<td>'+list[i].paymentCountry       +'</td>';
+		    html+='<td>'+list[i].sourceCountry        +'</td>';
+		    html+='<td>'+list[i].top            +'</td>';
+		    html+='<td>'+list[i].dueDate +'</td>';
+		    html+='<td>'+list[i].dateOfRealization +'</td>';
+		    html+='<td>'+list[i].bankName +'</td>';
+		    html+='<td>'+list[i].bankAddress +'</td>';
+		    html+='<td>'+list[i].bankStreet +'</td>';
+		    html+='<td>'+list[i].bankCity   +'</td>';
+		    html+='<td>'+list[i].bankState +'</td>';
+		    html+='<td>'+list[i].bankCountry         +'</td>';
+		    html+='<td>'+list[i].bankPostal +'</td>';
+		    html+='<td><button class="btn text-primary" id="proposalViewButton" onclick="viewEmplmedaProposal()">'
+		         +'<i class="fas fa-eye fa-lg"></i>'
+		         +' </button>'
+		         +'</td>';
+		     html+='<td><button class="btn text-warning" data-toggle="modal" data-target="#myModal" id="idAddOption">'
+		     +'<i class="fas fa-edit fa-lg"></i>'
+		     +'</button></td>';
+		       html+='<td><button class="btn" data-toggle="modal" data-target="#deletemodel" id="idAddOption">'
+		       +'<i class="fas fa-trash text-danger fa-lg"></i>'
+		       +'</button></td>';
+		       
+		       
+		 }
+		 console.log(html);
+		 $('tbody').append(html);
+		   
+		 console.log("list : "+list);
+		
+		
+		 
+		 });
+		  alert("list3 : ",list); 
+		//  $('#submitTable').click(function(){
+		 	 
+		 	
+		// })
+		 $('#submitTable').click(function(){
+		 	$.ajax({
+		      type: "POST",
+		      url: "/shipment",
+		      data: JSON.stringify({"list":list}),
+		      //data : JSON.stringify(list),
+		      //data: JSON.stringify(list),
+		      //dataType: "json",
+		      success: function(data){
+		          alert("Save Complete");
+		        window.location.replace("/shipmentDeclaration");
+		      },
+		      error: function(xhr, status, error) {
+		    	  alert("error : "+xhr.responseText);
+		    	},
+			  
+			  contentType : "application/json",
+		      dataType: "json"
+			
+		});
+		 });
+		 
+		 */
+
+	});
+</script>
+</head>
+<body>
+	<div id="page-wrapper" layout:fragment="content">
+		<div class="card shadow mb-4 mt-2">
+
+			<!--card header-->
+			<div class="card-header py-3 ">
+				<div class="form -group row">
+					<div class="col-sm-12 mb-3 mb-sm-0">
+
+						<h6 class="m-0 font-weight-bold text-primary" id="datatables">Shipment Declaration</h6>
+					</div>
+					<!-- <div class="d-flex flex-row-reverse"> -->
+
+				</div>
+			</div>
+			<!--end of card header-->
+			<div class="card-body">
+
+				<p>
+					<strong>Shipment Declaration for Policy</strong>
+				</p>
+
+				<div>
+					<span> <strong>How would you like to provide
+							Shipment Declaration? &nbsp&nbsp </strong>
+					</span> <label><input type="radio" name="colorRadio"
+						value="manually"> Manually</label> <label><input
+						type="radio" name="colorRadio" value="upload"> Upload xl
+						File</label>
+
+				</div>
+
+
+				<div class="form-group row upload showhide">
+					<form action="#">
+						<div class="col-sm-6 mb-3 mb-sm-0">
+							<div class="form-group row">
+								<div class="col">
+									<div class="form-group">
+										<label><b>Fileupload</b></label>
+										<div class="custom-file">
+											<input type="file" class=" custom-file-input" name="img[]"
+												id="inputGroupFile04"
+												aria-describedby="inputGroupFileAddon04"> <label
+												class="custom-file-label" for="inputGroupFile04">Choose
+												file</label>
+										</div>
+										<div>
+											<small>Supported Format:PDF,JPEG</small> <small
+												class="float-right">Max Size:10MB</small>
+
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="form-actions mt-1">
+							<input type="submit" class="btn btn-primary" value="Submit"></input>
+						</div>
+					</form>
+
+				</div>
+
+
+				<div id="div-2" class="row showhide manually">
+					<div class="col-lg-12">
+						<form th:action="@{/shipmentDetails}" th:object="${sDecl}" 
+							method="post">
+
+
+							<!-- Card Content - Collapse -->
+
+							<div
+								th:each="ScrSepEtpSspBwpDecl, itemStat : ${sDecl.ScrSepEtpSspBwpDecls}">
+
+								<div class="form-group row ml-1 mr-1 ">
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Date of
+											Shipment </label> <input type="date" class="form-control"
+											th:field="${ScrSepEtpSspBwpDecls[__${itemStat.index}__].shipmentDt}"></input>
+									</div>
+									<div class="col-sm-6 mb-2 mb-sm-0">
+										<label class="custom-smile-form-label">GR/PP/SB/invoice
+											No. </label> <input type="text" class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].grPpSbInvoiceNo}"
+											placeholder="GR/PP/SB/invoice No.">
+									</div>
+								</div>
+
+								<div class="form-group row ml-1 mr-1 ">
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Commodity</label> <select
+											class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].commodityCd}">
+											<option value="" hidden="true">Select Commodity Name</option>
+											<option th:each="i : ${#numbers.sequence(0, 100)}"
+												th:value="${i}" th:text="${i}"></option>
+										</select>
+									</div>
+									<div class="col-sm-6 mb-2 mb-sm-0">
+										<label class="custom-smile-form-label">Destination
+											Country</label> <select class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].destCountryCd}">
+											<option value="" hidden="true">Select Country</option>
+											<option th:each="country : ${countries}"
+												th:value="${country.key}" th:text="${country}"></option>
+										</select>
+									</div>
+								</div>
+
+
+
+								<div class="form-group row ml-1 mr-1">
+									<div class="col-sm-12 mb-6 mb-sm-0">
+										<label class="custom-smile-form-label">Buyer Name</label> <input
+											type="text" class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].byrName}"
+											placeholder="Buyer Name">
+									</div>
+								</div>
+
+								<div class="form-group row ml-1 mr-1">
+									<div class="col-sm-12 mb-6 mb-sm-0">
+										<label class="custom-smile-form-label">Buyer's Address
+											Line</label> <input type="text" class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].byrAddrLine}"
+											placeholder="Enter Address..">
+									</div>
+								</div>
+								<div class="form-group row ml-1 mr-1">
+									<div class="col-sm-12 mb-6 mb-sm-0">
+										<label class="custom-smile-form-label">Buyer's Address
+											Street</label> <input type="text" class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].byrAddrStreet}"
+											placeholder="Enter Address..">
+									</div>
+								</div>
+
+								<div class="form-group row ml-1 mr-1">
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Buyer's City</label> <input
+											type="text" class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].byrAddrCity}"
+											placeholder="Enter City">
+									</div>
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Buyer's State</label> <input
+											type="text" class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].byrAddrState}"
+											placeholder="Enter State">
+									</div>
+								</div>
+
+								<div class="form-group row ml-1 mr-1">
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Buyer's Country</label>
+										<select class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].byrCountryCd}">
+											<option value="" hidden="true">Select Country</option>
+											<option th:each="country : ${countries}"
+												th:value="${country.key}" th:text="${country}"></option>
+										</select>
+									</div>
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Buyer's Postal
+											Code</label> <input type="text" class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].byrAddrPincode}"
+											placeholder="Enter Postal Code">
+									</div>
+								</div>
+
+								<div class="form-group row ml-1 mr-1 ">
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Payment Country</label>
+										<select class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].countryFromWhichPaymentToBeRecievedCd}">
+											<option value="" hidden="true">Select Country</option>
+											<option th:each="country : ${countries}"
+												th:value="${country.key}" th:text="${country}"></option>
+										</select>
+									</div>
+									<div class="col-sm-6 mb-2 mb-sm-0">
+										<label class="custom-smile-form-label">Source Country</label>
+										<select class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].sourceCountryCd}">
+											<option value="" hidden="true">Select Country</option>
+											<option th:each="country : ${countries}"
+												th:value="${country.key}" th:text="${country}"></option>
+										</select>
+									</div>
+								</div>
+
+								<div class="form-group row ml-1 mr-1 ">
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Terms of
+											Payment</label> <select class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].topId}">
+											<option value="" hidden="true">Select Payment Terms</option>
+											<option value="composite">Composite [LOV]</option>
+											<option value="nonlife">Non-Life [LOV]</option>
+										</select>
+									</div>
+									<div class="col-sm-6 mb-2 mb-sm-0">
+										<label class="custom-smile-form-label">Due Date of
+											Payment </label> <input type="date" class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].dueDtOfPayment}"></input>
+									</div>
+								</div>
+
+								<div class="form-group row ml-1 mr-1 ">
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Date of
+											Realization(if realized) </label> <input type="date"
+											class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].realizationDt}"></input>
+									</div>
+									<div class="col-sm-6 mb-2 mb-sm-0">
+										<label class="custom-smile-form-label">LC opening Bank
+											Name</label> <input type="text" class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].lcOpeningBankName}"
+											placeholder="Bank Name">
+									</div>
+								</div>
+
+
+								<div class="form-group row ml-1 mr-1">
+									<div class="col-sm-12 mb-6 mb-sm-0">
+										<label class="custom-smile-form-label">Bank's Address
+											Line</label> <input type="text" class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].lcOpeningBankAddrLine}"
+											placeholder="Enter Address..">
+									</div>
+								</div>
+								<div class="form-group row ml-1 mr-1">
+									<div class="col-sm-12 mb-6 mb-sm-0">
+										<label class="custom-smile-form-label">Bank's Address
+											Street</label> <input type="text" class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].lcOpeningBankAddrStreet}"
+											placeholder="Enter Address..">
+									</div>
+								</div>
+
+								<div class="form-group row ml-1 mr-1">
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Bank's City</label> <input
+											type="text" class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].lcOpeningBankAddrCity}"
+											placeholder="Enter City">
+									</div>
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Bank's State</label> <input
+											type="text" class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].lcOpeningBankAddrState}"
+											placeholder="Enter State">
+									</div>
+								</div>
+
+								<div class="form-group row ml-1 mr-1">
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Bank's Country</label>
+										<select class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].lcOpeningBankAddrCountryCd}">
+											<option value="" hidden="true">Select Country</option>
+											<option th:each="country : ${countries}"
+												th:value="${country.key}" th:text="${country}"></option>
+										</select>
+									</div>
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Bank's Postal
+											Code</label> <input type="text" class="form-control"
+											th:field="*{ScrSepEtpSspBwpDecls[__${itemStat.index}__].lcOpeningBankAddrPincode}"
+											placeholder="Enter Postal Code">
+									</div>
+								</div>
+
+
+
+
+								<div class="form-actions mt-1">
+									<input type="submit" class="btn btn-primary" value="Add"></input>
+
+								</div>
+
+
+
+							</div>
+							<!--Closing Div for iteration of list  -->
+							<!-- <hr class="broad"> -->
+
+
+							<!-- <hr class="broad"> -->
+						</form>
+					</div>
+
+					<div></div>
+
+					<!-- table responsive  </div> -->
+					<div class="card shadow mb-4 mt-2 border-left-danger">
+
+
+						<div class="card-header py-3">
+							<div class="form -group row">
+								<div class="col-sm-10 mb-3 mb-sm-0">
+									<h6 class="m-0 font-weight-bold " id="datatables">Shipments</h6>
+								</div>
+								<div class="d-flex flex-row-reverse">
+									<div class="col-sm-2 mb-3 mb-sm-0">
+										<button type="button"
+											class="btn btn-primary btn-icon-split float-right"
+											data-toggle="modal" data-target="#myModal" id="submitTable">
+
+											<span class="text">Submit</span>
+										</button>
+									</div>
+								</div>
+							</div>
+
+
+
+							<div class="card-body">
+
+
+								<table
+									class="table table-bordered table-responsive table-striped item"
+									id="example1" width="100%" cellspacing="0">
+
+									<thead>
+										<tr>
+
+											<th>Date of Shipment</th>
+											<th>GR/PP/SB/invoice No.</th>
+											<th>Commodity</th>
+											<th>Destination Country</th>
+											<th>Buyer Name</th>
+											<th>Buyer's Address Line</th>
+											<th>Buyer's Address Street</th>
+											<th>Buyer's City</th>
+											<th>Buyer's State</th>
+											<th>Buyer's Country</th>
+											<th>Buyer's Postal Code</th>
+											<th>Payment Country</th>
+											<th>Source Country</th>
+											<th>Terms of Payment</th>
+											<th>Due Date of Payment</th>
+											<th>Date of Realization(if realized)</th>
+											<th>LC opening Bank Name</th>
+											<th>Bank's Address Line</th>
+											<th>Bank's Address Street</th>
+											<th>Bank's City</th>
+											<th>Bank's State</th>
+											<th>Bank's Country</th>
+											<th>Bank's Postal Code</th>
+											<th>View</th>
+											<th>Edit</th>
+											<th>Delete</th>
+
+										</tr>
+									</thead>
+
+									<tfoot>
+										<tr>
+											<th>Date of Shipment</th>
+											<th>GR/PP/SB/invoice No.</th>
+											<th>Commodity</th>
+											<th>Destination Country</th>
+											<th>Buyer Name</th>
+											<th>Buyer's Address Line</th>
+											<th>Buyer's Address Street</th>
+											<th>Buyer's City</th>
+											<th>Buyer's State</th>
+											<th>Buyer's Country</th>
+											<th>Buyer's Postal Code</th>
+											<th>Payment Country</th>
+											<th>Source Country</th>
+											<th>Terms of Payment</th>
+											<th>Due Date of Payment</th>
+											<th>Date of Realization(if realized)</th>
+											<th>LC opening Bank Name</th>
+											<th>Bank's Address Line</th>
+											<th>Bank's Address Street</th>
+											<th>Bank's City</th>
+											<th>Bank's State</th>
+											<th>Bank's Country</th>
+											<th>Bank's Postal Code</th>
+											<th>View</th>
+											<th>Edit</th>
+											<th>Delete</th>
+
+										</tr>
+									</tfoot>
+									<tbody id="tbody">
+
+
+									</tbody>
+								</table>
+								<span class="exportbuttons"> </span>
+							</div>
+
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- ACTUAL BODY CONTENT -->
+
+		</div>
+	</div>
+
+
+	
+
+
+	<th:block layout:fragment="scripts">
+		<!-- Data Tables -->
+		<script type="text/javascript"
+			th:src="@{/webjars/startbootstrap-sb-admin-2/vendor/datatables/jquery.dataTables.min.js}"></script>
+		<script type="text/javascript"
+			th:src="@{/webjars/startbootstrap-sb-admin-2/vendor/datatables/dataTables.bootstrap4.min.js}"></script>
+		<script type="text/javascript"
+			th:src="@{/webjars/datatables-buttons/js/dataTables.buttons.min.js}"></script>
+		<script type="text/javascript"
+			th:src="@{/webjars/datatables-buttons/js/buttons.html5.min.js}"></script>
+		<script type="text/javascript"
+			th:src="@{/webjars/datatables-buttons/js/buttons.print.min.js}"></script>
+		<script type="text/javascript"
+			th:src="@{/js/datatablejs/pdfmake.min.js}"></script>
+		<script type="text/javascript"
+			th:src="@{/js/datatablejs/vfs_fonts.js}"></script>
+		<script type="text/javascript" th:src="@{/js/exporttable.js}"></script>
+		<script type="text/javascript" th:src="@{/js/buttonbootstrap4.js}"></script>
+
+
+	</th:block>
+
+
+
+</body>
+</html>
+

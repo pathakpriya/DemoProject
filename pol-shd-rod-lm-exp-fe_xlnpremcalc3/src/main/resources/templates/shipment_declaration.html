@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout}">
+<head>
+<meta charset="ISO-8859-1"/>
+<title>shipment declaration</title>
+
+<style type="text/css">
+
+ .showhide {  
+   display:none;
+}
+
+.colour
+{
+background-color: red;
+}
+.errorMsg {
+	color: red;
+}
+
+.required {
+	color: red;
+}
+.input-group.input-group-unstyled input.form-control {
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+
+</style>
+ <script th:src="@{/declarationScr.xlsx}" type="text/javascript"></script>
+  <script th:src="@{/EXCEL_UPLOAD_ERRORS.txt}" type="text/javascript"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script th:inline="javascript">
+var list = [];
+var id = 0;
+var table;
+var listXL = [];
+var globalmonth=0, globalyear=0;
+
+$(document).ready(function(){
+	//var data={};
+	
+	//var table = $('#example2').dataTable();
+	
+	$("body").children().first().before($(".modal")); 
+    $('input[type="radio"]').click(function(){
+    	//alert("radio");
+        var inputValue = $(this).attr("value");
+        var targetBox = $("." + inputValue);
+        $(".showhide").not(targetBox).hide();
+        $(targetBox).show();
+    });
+    
+   
+     
+	$('#Submit').click(function() {
+		alert("upload");
+		var polNum = $("#policyNo").val();
+		alert(polNum);
+							$.ajax({
+								type : "POST",
+								url : "/uploadFile?policyNo="+polNum,
+								processData : false,
+								enctype : 'multipart/form-data',
+								data : new FormData($("#upload-file-form")[0]),
+								contentType: false,
+								async: true,
+								dataType: "json",
+								success : function(data) {
+									alert(JSON.stringify(data));
+									globalyear=data[0].year;
+									globalmonth=data[0].month;
+									$("#errorDiv").css("display", "none");
+									//var data_retrieved = data[0].errorCode.replace("^[\"]+|[\"]+$","");
+									var data_retrieved = data[0].errorCode;
+									//var data_retrieved = data1.replace(/col/gi, '<br/> col');
+									if(!(data_retrieved=="")){
+									$("#excelWarning").css("display", "block");
+									}
+									$("#xlspan").text(data_retrieved);
+									 table=$('#example2').DataTable({
+										/*  responsive: {
+								                details: {
+								                    display: $.fn.dataTable.Responsive.display.modal( {
+								                        header: function ( row ) {
+								                        	alert("data-table");
+								                            var data = row.data();
+								                            return 'Details for '+data[0]+' '+data[1];
+								                        }
+								                    } ),
+								                    renderer: $.fn.dataTable.Responsive.renderer.tableAll( {
+								                        tableClass: 'table'
+								                    } )
+								                }
+								            }, */
+										 
+										 retrieve: true,
+										 ordering : false,  
+						                    data: data,
+						                    columns : [
+						                    	
+												{
+													"data" : "day"
+												},
+												{
+													"data" : "invoiceNo"
+												},
+												{
+													"data" : "commodity"
+												},
+												{
+													"data" : "country"
+												},
+												{
+													"data" : "buyerCode"
+												},
+												{
+													"data" : "buyerName"
+												},
+												{
+													"data" : "buyerAddress"
+												},
+
+												{
+													"data" : "buyerStreet"
+												},
+												{
+													"data" : "buyerCity"
+												},
+												{
+													"data" : "buyerState"
+												},
+												{
+													"data" : "buyerCountry"
+												},
+												{
+													"data" : "buyerPostal"
+												},
+												{
+													"data" : "paymentCountry"
+												},
+
+												{
+													"data" : "sourceCountry"
+												},
+												{
+													"data" : "destCountry"
+												},
+												{
+													"data" : "givInr"
+												},
+												{
+													"data" : "top"
+												},
+												{
+													"data" : "dueDate"
+												},
+												{
+													"data" : "dateOfRealization"
+												},
+												{
+													"data" : "lcCode"
+												},
+												{
+													"data" : "bankName"
+												},
+												{
+													"data" : "bankAddress"
+												},
+
+												{
+													"data" : "bankStreet"
+												},
+												{
+													"data" : "bankCity"
+												},
+												{
+													"data" : "bankState"
+												},
+												{
+													"data" : "bankCountry"
+												},
+												{
+													"data" : "bankPostal"
+												},
+												{
+													"data" : null,
+													"className" : "center",
+													"defaultContent" : '<td><center> <input name="radio-brokers" type="radio" id="radioinstant"></center></td>'
+													//"defaultContent" : '<button class="btn text-primary float-right view btn-sm mr-1"  data-toggle="modal" data-target="#vieweditmodel" onclick="updatexl(this)" ><i class="fas fa-eye fa-lg"></i></button>'
+													//"defaultContent" : '<button class="btn" id="deleteDtls" onclick="deleteRow(this)"><i class="fas fa-trash text-danger fa-lg"></i></button>'
+												},
+												{
+													"data" : null,
+													"className" : "center",
+													//"defaultContent" : '<button class="btn text-primary float-right view btn-sm mr-1"  data-toggle="modal" data-target="#vieweditmodel" onclick="update(this)" ><i class="fas fa-eye fa-lg"></i></button>'
+													"defaultContent" : '<button class="btn" id="deleteDtls" onclick="deleteRowxl(this)"><i class="fas fa-trash text-danger fa-lg"></i></button>'
+												}
+
+										],
+								            'columnDefs': [ {
+								                'targets': [0], // column index (start from 0)
+								                'orderable': false, // set orderable false for selected columns
+								             }]
+						                    
+								})
+								$("#divXLDatatable").css("display", "block");
+								$("#submitTableXL").css("display", "block");
+								console.log("data"+data.length);
+								 for(var i=0; i<data.length; i++){
+									console.log(i + " " + data[i].duplicateFlag);
+									if(data[i].duplicateFlag == true){
+										console.log("i'm here");
+									$("#example2").find('tbody').find('tr').eq(i).find('td').css("border-color", "red");
+									}
+								} ;
+								},
+							
+							error: function (xhr, status, errorThrown) {
+						        //Here the status code can be retrieved like;
+						     //   var table=$('#example2').dataTable().fnClearTable();
+						        xhr.status;
+						        $("#submitTableXL").css("display", "none");
+						        $("#errorDiv").css("display", "block");
+						        $("#divXLDatatable").css("display", "none");
+						        if(xhr.responseText=="errorwarning"){
+						        	$("#xlerrorwarningtxt").css("display", "block");
+						        	$("#divXLDatatable").css("display", "none");
+						        }
+						        $("#excelWarning").css("display", "none");
+						       // $('#errorFile').text(xhr.responseText);
+						        //The message added to Response object in Controller can be retrieved as following.
+						       confirm( xhr.responseText);
+						    }
+							});
+						});
+ 
+ 
+ 
+ $(".custom-file-input").on(
+								"change",
+								function() {
+									//alert("file upload");
+									var fileName = $(this).val().split("\\")
+											.pop();
+									
+									
+									 var allowedExtensions =  
+						                    /(\.xlsx)$/i; 
+						              
+						            if (!allowedExtensions.exec(fileName)) {
+						            	$("#errormsg").show();
+						            	$("#format").hide();
+						            	$("#size").hide();
+						            	$("#errormsg").html("Invalid file type,please download the template file given and upload the same.").css("color" , "red");
+						            	$(this).siblings(".custom-file-label")
+										.addClass("selected")
+										.html('');
+						            	
+						            }else 
+						            	{
+						            	$("#errormsg").hide();
+						            	$("#format").show();
+						            	$("#size").show();
+						            	$(this).siblings(".custom-file-label")
+										.addClass("selected")
+										.html(fileName);
+						            	}
+									
+									
+								});
+
+    		
+    		/* 
+    		$('#vieweditmodelButton').click(function(){
+    			
+    			console.log('button clicked');
+				console.log("check: ",$("input[name='radio-brokers']:checked").val());
+				if (!$("input[name='radio-brokers']:checked").val()) {
+				console.log('Please select a row!');
+				alert('Please select a row!');
+				}
+				else
+					{
+					/* alert("elsehello");
+					//var	ele=document.getElementsByName('radio-brokers').checked;
+				var ele= $("input[name='radio-brokers']:checked");
+					//var tr = ele[0].parent().parent();
+					//alert( tr.cells.item(1).innerHTML);
+		//	var	ele=$("input[name='radio-brokers']:checked");
+					console.log(ele);
+					update(ele); 
+					
+					var rows = table.rows( '.selected' );
+					rows.edit( {
+					    title: 'Edit '+rows.count()+' rows'
+					} );
+					}
+    		}); */
+/*     		$('#submitTableXL').click(function() {
+		    	alert('submitalert');
+				var tableRows = table.rows().data();
+				alert(tableRows);
+				var newData = {};
+				//Generate List and send it to back end
+				tableRows.each(function (value, index) {
+				     console.log(`For index ${index}, data value is ${value[0]}`);
+				     newData.shipmentDay = value[0];
+				     newData.grPpSbInvoiceNo= value[1];
+				     newData.commodityCd= value[2];
+				     newData.destCountryCd= value[3];
+				     newData.byrCode=value[4];
+				     newData.byrName= value[5];
+				     newData.byrAddrLine= value[6];
+				     newData.byrAddrStreet= value[7];
+				     newData.byrAddrCity= value[8];
+					 newData.byrAddrState= value[9];
+					 newData.byrCountryCd= value[10];
+					 newData.byrAddrPincode= value[11];
+					 newData.countryFromWhichPaymentToBeRecievedCd= value[12];
+					 newData.sourceCountryCd= value[13];
+					 newData.topId= value[14];
+					 newData.dueDtOfPayment= value[15];
+					 newData.realizationDt= value[16];
+					 newData.lcOpeningBankCode=value[17];
+					 newData.lcOpeningBankName= value[18];
+					 newData.lcOpeningBankAddrLine= value[19];
+					 newData.lcOpeningBankAddrStreet= value[20];
+					 newData.lcOpeningBankAddrCity= value[21];
+					 newData.lcOpeningBankAddrState= value[22];
+					 newData.lcOpeningBankAddrCountryCd= value[23];
+					 newData.lcOpeningBankAddrPincode = value[24];
+					console.log();
+					 list.push(newData);
+				 });
+				$.ajax({
+					type : "POST",
+					url : "/shipmentDtls",
+					data : JSON.stringify(list),
+					//dataType: "json",
+					success : function(list) {
+
+						if (list.length == 0) {
+							document.getElementById("failure").innerHTML="Table is Empty!";
+							document.getElementById("failure").style.display="block";
+							$('html, body').animate({scrollTop:0}, 800);
+						}else{
+							
+							 console.log("List! has a value!");
+							 console.log("****"+JSON.stringify(list));
+							  console.log("saved");
+							  window.location.replace("/shipmentDeclaration");
+						}
+						
+					},
+					error : function(xhr, status, error) {
+						alert("error : " + xhr.responseText);
+					},
+
+					contentType : "application/json",
+					dataType : "json"
+
+				v});
+
+			}); */
+ $('#submitTableXL').click(function() {
+		listXL = JSON.stringify(tableToJSON($("#example2").DataTable()));
+		//listXL =	JSON.stringify(table.tableToJSON());	
+		//alert(JSON.stringify(listXL));
+		var polNum = $("#policyNo")[0].value;
+		//alert("polNum"+polNum);
+		$.ajax({
+			type : "POST",
+			url : "/shipmentDtlsXL?polNum="+polNum,
+			data : listXL,
+			//dataType: "json",
+			//dataType: "json",
+			success : function(listXL) {
+				// alert("Save Complete");
+				// window.location.replace("/shipmentDeclaration");
+				
+				alert("saved");
+
+			},
+			error : function(xhr, status, error) {
+				//$("#errorFile").text(xhr.responseText);
+				alert("error : " + xhr.responseText);
+			},
+
+			contentType : "application/json",
+			dataType : "json"
+
+		});
+
+	});
+ $('#vieweditmodelButton').click(function(){
+		console.log('button clicked');
+		console.log("check: ",$("input[name='radio-brokers']:checked").val());
+		if (!$("input[name='radio-brokers']:checked").val()) {
+		console.log('Please select a row!');
+		confirm('Please select a row!');
+		}else
+		{
+			//hiding the manual form and showing editable form
+			$("#xluploadhead").hide();
+		    $("#editform").show();
+		    $('html, body').animate({scrollTop:0}, 800);
+		    var tr= $("input[name='radio-brokers']:checked").closest('tr'); // getting the selected row
+			console.log("tr: ", table.row(tr).index());
+			//var rowId = update(tr[0]);// setting fields from datatable in edit form
+			//updation(table.row(tr).index());//send updated form to data table
+			update(tr[0]);
+	    	updation(table.row(tr[0]).index());
+		}
+	});
+
+
+ 
+ $('#cancelEdit').click(function(){
+	 $("#editform").hide();
+     $("#xluploadhead").show();
+     $("input[name='radio-brokers']").prop('checked', false);
+     $('html, body').animate({scrollTop:0}, 800);
+});
+					});
+
+					
+					
+					
+function tableToJSON(table){  
+	var employeeObjects = [];
+    var data = table.rows().data();
+
+    for (var i = 0; i < data.length; i++) {
+        employeeObjects.push(data[i]);
+    }
+
+    return employeeObjects;
+	};
+					
+				/*	function add(adddata)
+					{    alert('add');
+					$("#errorDiv").css("display", "none");
+					//var data_retrieved = data[0].errorCode.replace("^[\"]+|[\"]+$","");
+					var data_retrieved = adddata[0].errorCode;
+					//var data_retrieved = data1.replace(/col/gi, '<br/> col');
+					if(!(data_retrieved=="")){
+					$("#excelWarning").css("display", "block");
+					}
+					$("#xlspan").text(data_retrieved);
+						table = $('#example2').DataTable();
+						alert(JSON.stringify(adddata));
+						//alert(adddata.length);
+						for(var i=0;i<adddata.length;i++)
+							{
+							//alert(adddata.dateOfShipment);
+							 table.row.add([adddata[i].day, 
+								 adddata[i].invoiceNo,
+								 adddata[i].commodity,
+								 adddata[i].country,
+								 adddata[i].buyerCode,
+								 adddata[i].buyerName,
+								 adddata[i].buyerAddress,
+								 adddata[i].buyerStreet,
+								 adddata[i].buyerCity,
+								 adddata[i].buyerState,
+								 adddata[i].buyerCountry,
+								 adddata[i].buyerPostal,
+								 adddata[i].paymentCountry,
+								 adddata[i].sourceCountry,
+								 adddata[i].top,
+								 adddata[i].dueDate,
+								 adddata[i].dateOfRealization,
+								 adddata[i].lcCode,
+								 adddata[i].bankName,
+								 adddata[i].bankAddress,
+								 adddata[i].bankStreet,
+								 adddata[i].bankCity,
+								 adddata[i].bankState,
+								 adddata[i].bankCountry,
+								 adddata[i].bankPostal,
+								'<td><center> <input name="radio-brokers" type="radio" id="radioinstant"></center></td>',
+								'<td><button class="btn" id="deleteDtls" onclick="deleteRow(this)"><i class="fas fa-trash text-danger fa-lg"></i></button></td>'
+								]).node().id = id;  //Add row and assign row id
+							table.draw(false);
+							id = id + 1;
+							/* $("#divXLDatatable").css("display", "block");
+							$("#submitTableXL").css("display", "block");  
+							//alert("data"+adddata);
+							 for(var i=0; i<adddata.length; i++){
+								 //alert("Inside Loop");
+								//alert(i + " " + adddata[i].duplicateFlag);
+								if(adddata[i].duplicateFlag == true){
+									alert("i'm here");
+									$('#example2').find('tbody').find('tr').eq(i).find('td').css("border-color", "red");
+									
+								}
+									
+								
+							} ;  
+							
+							}
+					
+						 
+					};*/
+					 
+				  /*  function  preupdate() {
+				 // alert("hello");
+				    	 console.log('button clicked');
+							console.log("check: ",$("input[name='radio-brokers']:checked").val());
+							if (!$("input[name='radio-brokers']:checked").val()) {
+							console.log('Please select a row!');
+							alert('Please select a row!');
+							}
+							else
+								{
+								alert('elsealert');
+								//alert(table.row(tr[0]).index());
+								 var tr= $("input[name='radio-brokers']:checked").closest('tr'); // getting the selected row
+									//console.log("tr: ", table.row(tr).index());
+								// alert(tr[0].cells.item(1).innerHTML);
+						    	// alert("tr: ", table.row(tr).index());
+						    	update(tr[0]);
+						    	updation(table.row(tr[0]).index());
+								}
+				   } */
+						    	 								
+				    function update(tr)
+				    {
+				    		 var editObj = {};
+							 editObj.shipmentDay = tr.cells.item(0).innerHTML;
+							 editObj.grPpSbInvoiceNo= tr.cells.item(1).innerHTML;
+							 editObj.commodityCd= tr.cells.item(2).innerHTML;
+							 editObj.destCountryCd = tr.cells.item(3).innerHTML;
+							 editObj.byrCode = tr.cells.item(4).innerHTML;
+							 editObj.byrName = tr.cells.item(5).innerHTML;
+							 editObj.byrAddrLine = tr.cells.item(6).innerHTML;
+							 editObj.byrAddrStreet = tr.cells.item(7).innerHTML;
+							 editObj.byrAddrCity = tr.cells.item(8).innerHTML;
+							 editObj.byrAddrState = tr.cells.item(9).innerHTML;
+							 editObj.byrCountryCd = tr.cells.item(10).innerHTML;
+							 editObj.byrAddrPincode = tr.cells.item(11).innerHTML;
+							 editObj.countryFromWhichPaymentToBeRecievedCd = tr.cells.item(12).innerHTML;
+							 editObj.sourceCountryCd = tr.cells.item(13).innerHTML;
+							 editObj.destinationCountryCd = tr.cells.item(14).innerHTML;
+							 editObj.givInr = tr.cells.item(15).innerHTML;
+							 editObj.topId = tr.cells.item(16).innerHTML;
+							 editObj.dueDtOfPayment = tr.cells.item(17).innerHTML;
+							 editObj.realizationDt = tr.cells.item(18).innerHTML;
+							 editObj.lcOpeningBankCode= tr.cells.item(19).innerHTML;
+							 editObj.lcOpeningBankName = tr.cells.item(20).innerHTML;
+							 editObj.lcOpeningBankAddrLine = tr.cells.item(21).innerHTML;
+							 editObj.lcOpeningBankAddrStreet = tr.cells.item(22).innerHTML;
+							 editObj.lcOpeningBankAddrCity = tr.cells.item(23).innerHTML;
+							 editObj.lcOpeningBankAddrState = tr.cells.item(24).innerHTML;
+							 editObj.lcOpeningBankAddrCountryCd = tr.cells.item(25).innerHTML;
+							 editObj.lcOpeningBankAddrPincode = tr.cells.item(26).innerHTML;
+						var str =editObj.shipmentDay;
+							 //alert(typeof(editObj.grPpSbInvoiceNo));
+					     //  alert("Shipmentdt: "+str);
+							//alert("@@@@Month:"+globalmonth);
+							 var days = new Date(globalyear,globalmonth,0).getDate(); 
+							
+								//alert(days);
+								//alert( document.getElementById("#editShipmentDt"));
+								 //lets create the days of that month
+								 for (var d = 1; d <= days; d++){
+								   var dayElem = document.createElement("option");
+								   dayElem.value = d; 
+								   dayElem.textContent = d;
+								  
+								   $("#editShipmentDt").append(dayElem);
+								   
+								 }
+								 //setting datatable values in edit form
+					        $('#editShipmentDt').val(editObj.shipmentDay).attr('selected', 'selected');
+					        $('#editGrPpSbInvoiceNo').val(editObj.grPpSbInvoiceNo);
+					        $('#editcommodityCd').val(editObj.commodityCd).attr('selected', 'selected');
+					      	 $('#editdestCountryCd').val(editObj.destCountryCd).attr('selected', 'selected');
+					      	 $('#editbyrCode').val(editObj.byrCode);
+					      	 $('#editbyrName').val(editObj.byrName);
+					      	 $('#editbyrAddrLine').val(editObj.byrAddrLine);
+					      	 $('#editbyrAddrStreet').val(editObj.byrAddrStreet);
+					        $('#editbyrAddrCity').val(editObj.byrAddrCity);
+					        $('#editbyrAddrState').val(editObj.byrAddrState);
+					        $('#editbyrCountryCd').val(editObj.byrCountryCd).attr('selected', 'selected');
+					        $('#editbyrAddrPincode').val(editObj.byrAddrPincode);
+					        $('#editcountryFromWhichPaymentToBeRecievedCd').val(editObj.countryFromWhichPaymentToBeRecievedCd).attr('selected', 'selected');
+					        $('#editsourceCountryCd').val(editObj.sourceCountryCd).attr('selected', 'selected');
+					        $('#editDestinationcountryCd').val(editObj.destinationCountryCd).attr('selected', 'selected');
+					        $('#editGivInr').val(editObj.givInr);
+					        $('#edittopId').val(editObj.topId).attr('selected', 'selected');
+					        $('#editdueDtOfPayment').val(editObj.dueDtOfPayment);
+					        $('#editrealizationDt').val(editObj.realizationDt);
+					        $('#editlcOpeningBankCode').val(editObj.lcOpeningBankCode);
+					 		 $('#editlcOpeningBankName').val(editObj.lcOpeningBankName);
+					 		 $('#editlcOpeningBankAddrLine').val(editObj.lcOpeningBankAddrLine);
+					        $('#editlcOpeningBankAddrStreet').val(editObj.lcOpeningBankAddrStreet);
+					        $('#editlcOpeningBankAddrCity').val(editObj.lcOpeningBankAddrCity);
+					        $('#editlcOpeningBankAddrState').val(editObj.lcOpeningBankAddrState);
+					        $('#editlcOpeningBankAddrCountryCd').val(editObj.lcOpeningBankAddrCountryCd).attr('selected', 'selected');
+					        $('#editlcOpeningBankAddrPincode').val(editObj.lcOpeningBankAddrPincode);
+					  
+				    }
+				    
+				    function updation(rowId){
+				    	$("#edittopId").on("change",function(e){
+							
+							if($("#edittopId").val() == "DA-30"){
+								
+							//	$("#editLcOpeningBankDetails").hide();
+							
+								$('#editlcOpeningBankName').val("-").attr('disabled','disabled');
+								$('#editlcOpeningBankCode').val("-").attr('disabled','disabled');
+						  		 $('#editlcOpeningBankAddrLine').val("-").attr('disabled','disabled');
+						         $('#editlcOpeningBankAddrStreet').val("-").attr('disabled','disabled');
+						         $('#editlcOpeningBankAddrCity').val("-").attr('disabled','disabled');
+						         $('#editlcOpeningBankAddrState').val("-").attr('disabled','disabled');
+						         $('#editlcOpeningBankAddrCountryCd').val("-").attr('disabled','disabled');
+						         $('#editlcOpeningBankAddrPincode').val("-").attr('disabled','disabled');
+								
+						        //alert( $("#editShipmentDt").val());
+								if($("#editShipmentDt").val()){
+									var day1=$("#editShipmentDt").val();
+									 //alert("year:"+globalyear);
+									//alert("month:"+globalmonth);
+									//alert("day:"+day1); 
+									//var shipmentDt2=new Date(month,year);
+								var shipmentDt=new Date(globalyear,globalmonth-1,day1);
+								alert("------------shipmentDt"+shipmentDt);
+								//alert("****************"+new Date(shipmentDt.setDate(shipmentDt.getDate() + 30)).getDate());
+								
+								var calDate=new Date(shipmentDt.setDate(shipmentDt.getDate() + 30));
+								alert("getmonth----"+calDate.getMonth());
+								alert("----calDate---"+calDate);
+								var month = calDate.getMonth() < 10 ? "0"+(parseInt(calDate.getMonth()+1)) : calDate.getMonth();
+								var day = calDate.getDate()< 10 ? "0"+calDate.getDate() : calDate.getDate();
+								
+								alert("month:"+month);
+								alert("day:"+day);
+								
+								var dueDate= calDate.getFullYear()  + '-' + month + '-' + day;
+								alert(dueDate);
+								console.log("duedate:",dueDate);
+								$("#editdueDtOfPayment").val(dueDate);
+								
+								}else{
+									$("#editdueDtOfPayment").next(".errorMsg").html("Please Enter Shipment Date");
+									
+								}
+							}
+							
+							if($("#edittopId").val() == "DA-60"){
+								
+								//$("#editLcOpeningBankDetails").hide();
+								
+								$('#editlcOpeningBankName').val("-").attr('disabled','disabled');
+								$('#editlcOpeningBankCode').val("-").attr('disabled','disabled');
+						  		 $('#editlcOpeningBankAddrLine').val("-").attr('disabled','disabled');
+						         $('#editlcOpeningBankAddrStreet').val("-").attr('disabled','disabled');
+						         $('#editlcOpeningBankAddrCity').val("-").attr('disabled','disabled');
+						         $('#editlcOpeningBankAddrState').val("-").attr('disabled','disabled');
+						         $('#editlcOpeningBankAddrCountryCd').val("-").attr('disabled','disabled');
+						         $('#editlcOpeningBankAddrPincode').val("-").attr('disabled','disabled');
+								
+								
+								
+								if($("#editShipmentDt").val()){
+									var day1=$("#editShipmentDt").val();
+								var shipmentDt=new Date(globalyear,globalmonth-1,day1);
+								
+								//console.log("Due date:",new Date(shipmentDt.setDate(shipmentDt.getDate() + 60)).getDate());
+								
+								var calDate=new Date(shipmentDt.setDate(shipmentDt.getDate() + 60));
+								//alert("%%%%%%"+shipmentDt.getDate());
+								//alert("plus60date-----"+calDate+"----originaldate"+shipmentDt);
+								//alert("plusmonth%%%%%%"+calDate.getMonth() );
+								var month = calDate.getMonth() < 10 ? "0"+(parseInt(calDate.getMonth()+1)) : calDate.getMonth();
+								var day = calDate.getDate()< 10 ? "0"+calDate.getDate() : calDate.getDate();
+					
+								var dueDate= calDate.getFullYear()  + '-' + month+ '-' + day;
+								alert(dueDate);
+								console.log("duadate:",dueDate);
+								$("#editdueDtOfPayment").val(dueDate);
+								}else{
+									$("#editdueDtOfPayment").next(".errorMsg").html("Please Enter Shipment Date");
+									
+								}
+							}
+							
+							if($("#edittopId").val() == "DA-90"){
+								//$("#editLcOpeningBankDetails").hide();
+								
+								$('#editlcOpeningBankName').val("-").attr('disabled','disabled');
+								$('#editlcOpeningBankCode').val("-").attr('disabled','disabled');
+						  		 $('#editlcOpeningBankAddrLine').val("-").attr('disabled','disabled');
+						         $('#editlcOpeningBankAddrStreet').val("-").attr('disabled','disabled');
+						         $('#editlcOpeningBankAddrCity').val("-").attr('disabled','disabled');
+						         $('#editlcOpeningBankAddrState').val("-").attr('disabled','disabled');
+						         $('#editlcOpeningBankAddrCountryCd').val("-").attr('disabled','disabled');
+						         $('#editlcOpeningBankAddrPincode').val("-").attr('disabled','disabled');
+								
+								if($("#editShipmentDt").val()){
+									var day1=$("#editShipmentDt").val();
+									var shipmentDt=new Date(globalyear,globalmonth-1,day1);
+								alert(shipmentDt);
+								//console.log("Due date:",new Date(shipmentDt.setDate(shipmentDt.getDate() + 90)).getDate());
+								
+								var calDate=new Date(shipmentDt.setDate(shipmentDt.getDate() + 90));
+								
+								var month = calDate.getMonth() < 10 ? "0"+(parseInt(calDate.getMonth()+1)) : calDate.getMonth();
+								var day = calDate.getDate()< 10 ? "0"+calDate.getDate() : calDate.getDate();
+								
+								/* if((month+1)==001)
+								{
+									month="01";
+									alert(month);
+								} */
+								
+								var dueDate= calDate.getFullYear()  + '-' + month+ '-' + day;
+								alert(dueDate);
+								//console.log("duadate:",dueDate);
+								$("#editdueDtOfPayment").val(dueDate);	
+								}else{
+									$("#editdueDtOfPayment").next(".errorMsg").html("Please Enter Shipment Date");
+									
+								}
+								
+							}
+							
+							/* if($("#edittopId").val() == "LC"){
+								$("#editLcOpeningBankDetails").show();
+							} */
+							
+							
+						});
+				    	//$('#update').unbind().click(function(evt)
+						  $('#update').unbind().click(function(evt){
+							 
+							  var valid = true;
+								 if($("#editShipmentDt").val()==""){
+									$("#editShipmentDt").next(".errorMsg").html("Please Enter Shipment Date");
+									valid=false;
+								}
+								
+								if($("#editGrPpSbInvoiceNo").val()==""){
+									
+									$("#editGrPpSbInvoiceNo").next(".errorMsg").html("Please Enter Invoice number");
+									valid=false;
+								}
+								if($("#editcommodityCd").val()==""){
+									
+									$("#editcommodityCd").next(".errorMsg").html("Please choose commodity");
+									valid=false;
+								}
+								//if($("#editdestCountryCd").val().trim().length < 1)
+								if($("#editdestCountryCd").val()==""){
+									
+									$("#editdestCountryCd").next(".errorMsg").html("Please choose country");
+									valid=false;
+								}
+								
+								if($("#editbyrCode").val()==""){
+									
+									$("#editbyrCode").next(".errorMsg").html("Please Enter Buyer Code");
+									valid=false;
+								}if($("#editbyrName").val()==""){
+									
+									$("#editbyrName").next(".errorMsg").html("Please Enter Buyer name");
+									valid=false;
+								}
+								
+								
+								if($("#editbyrAddrLine").val()==""){
+									
+									$("#editbyrAddrLine").next(".errorMsg").html("Please Enter Buyer address");
+									valid=false;
+								}
+								
+								if($("#editbyrAddrStreet").val()==""){
+									
+									$("#editbyrAddrStreet").next(".errorMsg").html("Please Enter Buyer address street");
+									valid=false;
+								}
+								
+								if($("#editbyrAddrCity").val()==""){
+									
+									$("#editbyrAddrCity").next(".errorMsg").html("Please Enter Buyer city");
+									valid=false;
+								}
+								
+								if($("#editbyrAddrState").val()==""){
+									
+									$("#editbyrAddrState").next(".errorMsg").html("Please Enter Buyer state");
+									valid=false;
+								}
+								
+								if($("#editbyrCountryCd").val()==""){
+									
+									$("#editbyrCountryCd").next(".errorMsg").html("Please choose Buyer country");
+									valid=false;
+								}
+								
+								if($("#editbyrAddrPincode").val()==""){
+									
+									$("#editbyrAddrPincode").next(".errorMsg").html("Please Enter Buyer Pincode");
+									valid=false;
+								}
+								
+								if($("#editcountryFromWhichPaymentToBeRecievedCd").val()==""){
+									
+									$("#editcountryFromWhichPaymentToBeRecievedCd").next(".errorMsg").html("Please choose country from which payment to be recieved");
+									valid=false;
+								}
+								
+								if($("#editsourceCountryCd").val()==""){
+									
+									$("#editsourceCountryCd").next(".errorMsg").html("Please Choose source country");
+									valid=false;
+								}
+								if($("#editDestinationcountryCd").val()==""){
+									
+									$("#editsourceCountryCd").next(".errorMsg").html("Please Choose Destination country");
+									valid=false;
+								}
+								if($("#editGivInr").val()==""){
+									
+									$("#editsourceCountryCd").next(".errorMsg").html("Please Enter Giv INR country");
+									valid=false;
+								}
+								
+								if($("#edittopId").val()==""){
+									
+									$("#edittopId").next(".errorMsg").html("Please choose top");
+									valid=false;
+								}
+							
+								
+								if($("#editdueDtOfPayment").val()==""){
+									
+									$("#editdueDtOfPayment").next(".errorMsg").html("Please Enter Due date");
+									valid=false;
+								}
+								
+								if($("#editrealizationDt").val()==""){
+									
+									$("#editrealizationDt").next(".errorMsg").html("Please Enter realization date");
+									valid=false;
+								}
+									if($("#editlcOpeningBankCode").val()==""){
+									
+									$("#editlcOpeningBankCode").next(".errorMsg").html("Please Enter realization date");
+									valid=false;
+								}
+									if($("#editlcOpeningBankName").val()==""){
+										
+										$("#editlcOpeningBankName").next(".errorMsg").html("Please Enter realization date");
+										valid=false;
+									}
+									if($("#editlcOpeningBankAddrLine").val()==""){
+										
+										$("#editlcOpeningBankAddrLine").next(".errorMsg").html("Please Enter realization date");
+										valid=false;
+									}
+									if($("#editlcOpeningBankAddrStreet").val()==""){
+										
+										$("#editlcOpeningBankAddrStreet").next(".errorMsg").html("Please Enter realization date");
+										valid=false;
+									}
+									if($("#editlcOpeningBankAddrCity").val()==""){
+										
+										$("#editlcOpeningBankAddrCity").next(".errorMsg").html("Please Enter realization date");
+										valid=false;
+									}
+									if($("#editlcOpeningBankAddrState").val()==""){
+										
+										$("#editlcOpeningBankAddrState").next(".errorMsg").html("Please Enter realization date");
+										valid=false;
+									}
+									if($("#editlcOpeningBankAddrPincode").val()==""){
+										
+										$("#editlcOpeningBankAddrPincode").next(".errorMsg").html("Please Enter realization date");
+										valid=false;
+									}
+									
+							
+								if(valid){
+									$(".errorMsg").html("");
+									
+									 alert("rowId :" ,rowId);
+									  table.cell( rowId, 0 ).data( document.getElementById('editShipmentDt').value ).draw();
+									  table.cell( rowId, 1 ).data( document.getElementById('editGrPpSbInvoiceNo').value ).draw();
+									  table.cell( rowId, 2 ).data( document.getElementById('editcommodityCd').value ).draw();
+									  table.cell( rowId, 3 ).data( document.getElementById('editdestCountryCd').value ).draw();
+									  table.cell( rowId, 4 ).data( document.getElementById('editbyrCode').value ).draw();
+									  table.cell( rowId, 5).data( document.getElementById('editbyrName').value ).draw();
+									  table.cell( rowId, 6).data( document.getElementById('editbyrAddrLine').value ).draw();
+									  table.cell( rowId, 7).data( document.getElementById('editbyrAddrStreet').value ).draw();
+									  table.cell( rowId, 8 ).data( document.getElementById('editbyrAddrCity').value ).draw();
+									  table.cell( rowId, 9 ).data( document.getElementById('editbyrAddrState').value ).draw();
+									  table.cell( rowId, 10 ).data( document.getElementById('editbyrCountryCd').value).draw();
+									  table.cell( rowId, 11 ).data( document.getElementById('editbyrAddrPincode').value ).draw();
+									  table.cell( rowId, 12 ).data( document.getElementById('editcountryFromWhichPaymentToBeRecievedCd').value ).draw();
+									  table.cell( rowId, 13 ).data( document.getElementById('editsourceCountryCd').value ).draw();
+									  table.cell( rowId, 14 ).data( document.getElementById('editDestinationcountryCd').value ).draw();
+									  table.cell( rowId, 15).data( document.getElementById('editGivInr').value ).draw();
+									  table.cell( rowId, 16 ).data( document.getElementById('edittopId').value ).draw();
+									  table.cell( rowId, 17).data( document.getElementById('editdueDtOfPayment').value ).draw();
+									  table.cell( rowId, 18 ).data( document.getElementById('editrealizationDt').value ).draw();
+									  table.cell( rowId, 19 ).data( document.getElementById('editlcOpeningBankCode').value ).draw();
+									  table.cell( rowId, 20).data( document.getElementById('editlcOpeningBankName').value ).draw();
+									  table.cell( rowId, 21 ).data( document.getElementById('editlcOpeningBankAddrLine').value ).draw();
+									  table.cell( rowId, 22 ).data( document.getElementById('editlcOpeningBankAddrStreet').value ).draw();
+									  table.cell( rowId, 23 ).data( document.getElementById('editlcOpeningBankAddrCity').value ).draw();
+									  table.cell( rowId, 24 ).data( document.getElementById('editlcOpeningBankAddrState').value ).draw();
+									  table.cell( rowId, 25 ).data( document.getElementById('editlcOpeningBankAddrCountryCd').value ).draw();
+									  table.cell( rowId, 26 ).data( document.getElementById('editlcOpeningBankAddrPincode').value ).draw();
+									  $("#editform").hide();
+									  $("#xluploadhead").show();
+									     $("input[name='radio-brokers']").prop('checked', false);
+									     $('html, body').animate({scrollTop:0}, 800);
+									
+								}
+							 
+							 							  
+						  });
+				    };
+				    
+				    
+				
+				       /*  $('#update').click(function(){
+					        	alert("hey!!");
+					        	
+					        	// var table = $('#example2').DataTable();
+					        	//var data = table.row( 0 ).cell(0).data(document.getElementById('editShipmentDt').value);
+					        	//alert(data); 
+					        	
+					        	//var list = [];
+					        	
+					        	// console.log(document.getElementById('editShipmentDt').value);
+					        	// const i = (element) => JSON.stringify(element) == JSON.stringify(editObj);
+					    		// console.log("Index : ",list.findIndex(i));
+					    		// const index = list.findIndex(i);
+					        	 /*  list[index].shipmentDt = document.getElementById('editShipmentDt').value;
+					        	 list[index].grPpSbInvoiceNo=document.getElementById('editGrPpSbInvoiceNo').value;
+					        	 list[index].commodityCd= document.getElementById('editcommodityCd').value;
+					        	 list[index].destCountryCd = document.getElementById('editdestCountryCd').value;
+					        	 list[index].byrName = document.getElementById('editbyrName').value;
+					        	 list[index].byrAddrLine = document.getElementById('editbyrAddrLine').value;
+					        	 list[index].byrAddrStreet = document.getElementById('editbyrAddrStreet').value;
+					        	 list[index].byrAddrCity = document.getElementById('editbyrAddrCity').value;
+					        	 list[index].byrAddrState = document.getElementById('editbyrAddrState').value;
+					        	 list[index].byrCountryCd = document.getElementById('editbyrCountryCd').value;
+					        	 list[index].byrAddrPincode = document.getElementById('editbyrAddrPincode').value;
+					        	 list[index].countryFromWhichPaymentToBeRecievedCd = document.getElementById('editcountryFromWhichPaymentToBeRecievedCd').value;
+					        	 list[index].sourceCountryCd = document.getElementById('editsourceCountryCd').value;
+					        	 list[index].topId = document.getElementById('edittopId').value;
+					        	 list[index].dueDtOfPayment = document.getElementById('editdueDtOfPayment').value;
+					        	 list[index].realizationDt = document.getElementById('editrealizationDt').value;
+					        	 list[index].lcOpeningBankName = document.getElementById('editlcOpeningBankName').value;
+					        	 list[index].lcOpeningBankAddrLine = document.getElementById('editlcOpeningBankAddrLine').value;
+					        	 list[index].lcOpeningBankAddrStreet = document.getElementById('editlcOpeningBankAddrStreet').value;
+					        	 list[index].lcOpeningBankAddrCity = document.getElementById('editlcOpeningBankAddrCity').value;
+					        	 list[index].lcOpeningBankAddrState = document.getElementById('editlcOpeningBankAddrState').value;
+					        	 list[index].lcOpeningBankAddrCountryCd = document.getElementById('editlcOpeningBankAddrCountryCd').value;
+					        	 list[index].lcOpeningBankAddrPincode = document.getElementById('editlcOpeningBankAddrPincode').value;  
+					        	 tr.cells.item(0).innerHTML = document.getElementById('editShipmentDt').value; 
+					        	 tr.cells.item(1).innerHTML = document.getElementById('editGrPpSbInvoiceNo').value; 
+					        tr.cells.item(2).innerHTML= document.getElementById('editcommodityCd').value; 
+					        tr.cells.item(3).innerHTML=document.getElementById('editdestCountryCd').value; 
+					        tr.cells.item(4).innerHTML = document.getElementById('editbyrName').value; 
+					        tr.cells.item(5).innerHTML =document.getElementById('editbyrAddrLine').value; 
+					        tr.cells.item(6).innerHTML =document.getElementById('editbyrAddrStreet').value; 
+					        tr.cells.item(7).innerHTML =document.getElementById('editbyrAddrCity').value; 
+					        tr.cells.item(8).innerHTML =document.getElementById('editbyrAddrState').value; 
+					        tr.cells.item(9).innerHTML =document.getElementById('editbyrCountryCd').value; 
+					        tr.cells.item(10).innerHTML =document.getElementById('editbyrAddrPincode').value; 
+					        tr.cells.item(11).innerHTML =document.getElementById('editcountryFromWhichPaymentToBeRecievedCd').value; 
+					        tr.cells.item(12).innerHTML =document.getElementById('editsourceCountryCd').value; 
+					        tr.cells.item(13).innerHTML =document.getElementById('edittopId').value; 
+					        tr.cells.item(14).innerHTML =document.getElementById('editdueDtOfPayment').value; 
+					        tr.cells.item(15).innerHTML =document.getElementById('editrealizationDt').value; 
+					        tr.cells.item(16).innerHTML =document.getElementById('editlcOpeningBankName').value; 
+					        tr.cells.item(17).innerHTML =document.getElementById('editlcOpeningBankAddrLine').value; 
+					        tr.cells.item(18).innerHTML =document.getElementById('editlcOpeningBankAddrStreet').value; 
+					        tr.cells.item(19).innerHTML =document.getElementById('editlcOpeningBankAddrCity').value; 
+					        tr.cells.item(20).innerHTML =document.getElementById('editlcOpeningBankAddrState').value; 
+					        tr.cells.item(21).innerHTML =document.getElementById('editlcOpeningBankAddrCountryCd').value; 
+					        tr.cells.item(22).innerHTML =document.getElementById('editlcOpeningBankAddrPincode').value;
+					        console.log( tr.cells.item(1).innerHTML);
+					        	 alert("Shipment Detail Updated"); 
+					        	
+				        
+				         });
+				    }; 
+				     */
+				    
+				    
+					
+				    	 function deleteRowxl(ele) {
+				    			var r = confirm("Do you want to delete the entry ?");
+				    			  if (r == true) {
+				    				  var tr = ele.parentElement.parentElement;
+				    				
+				    					 table.row(tr)
+				    				          .remove()
+				    				          .draw();
+				    			  } 
+						/* var list = [];
+						var r = confirm("Do you want to delete the entry ?");
+						  if (r == true) {
+							  var tr = ele.parentElement.parentElement;
+								// console.log(tr.id);
+								 var rowId=tr.id;
+								 
+								 var delObj = {};
+								 delObj.shipmentDt = tr.cells.item(0).innerHTML;
+								 delObj.grPpSbInvoiceNo= tr.cells.item(1).innerHTML;
+								 delObj.commodityCd= tr.cells.item(2).innerHTML;
+								 delObj.destCountryCd = tr.cells.item(3).innerHTML;
+								 delObj.byrName = tr.cells.item(4).innerHTML;
+								 delObj.byrAddrLine = tr.cells.item(5).innerHTML;
+								 delObj.byrAddrStreet = tr.cells.item(6).innerHTML;
+								 delObj.byrAddrCity = tr.cells.item(7).innerHTML;
+								 delObj.byrAddrState = tr.cells.item(8).innerHTML;
+								 delObj.byrCountryCd = tr.cells.item(9).innerHTML;
+								 delObj.byrAddrPincode = tr.cells.item(10).innerHTML;
+								 delObj.countryFromWhichPaymentToBeRecievedCd = tr.cells.item(11).innerHTML;
+								 delObj.sourceCountryCd = tr.cells.item(12).innerHTML;
+								 delObj.topId = tr.cells.item(13).innerHTML;
+								 delObj.dueDtOfPayment = tr.cells.item(14).innerHTML;
+								 delObj.realizationDt = tr.cells.item(15).innerHTML;
+								 delObj.lcOpeningBankName = tr.cells.item(16).innerHTML;
+								 delObj.lcOpeningBankAddrLine = tr.cells.item(17).innerHTML;
+								 delObj.lcOpeningBankAddrStreet = tr.cells.item(18).innerHTML;
+								 delObj.lcOpeningBankAddrCity = tr.cells.item(19).innerHTML;
+								 delObj.lcOpeningBankAddrState = tr.cells.item(20).innerHTML;
+								 delObj.lcOpeningBankAddrCountryCd = tr.cells.item(21).innerHTML;
+								 delObj.lcOpeningBankAddrPincode = tr.cells.item(22).innerHTML;
+								 const i = (element) => JSON.stringify(element) == JSON.stringify(delObj);
+								 console.log("Index for delete : ",list.findIndex(i));
+								 const index = list.findIndex(i);
+								 list.splice(index, 1); //remove element from list
+								tr.remove(); // remove row using id
+						  } 
+ */					
+
+					}
+				    
+  
+
+						
+</script>
+</head>
+<body>
+<div id="page-wrapper" layout:fragment="content">
+		<div class="card shadow mb-4 mt-2">
+
+			<!--card header-->
+			<div class="card-header py-3 ">
+				<div class="form -group row">
+					<div class="col-sm-12 mb-3 mb-sm-0">
+					
+						<h6 class="m-0 font-weight-bold text-primary" id="datatables">Shipment Declaration</h6>
+					</div>
+					<!-- <div class="d-flex flex-row-reverse"> -->
+
+				</div>
+			</div>
+			<!--end of card header-->
+			<div class="card-body">
+			
+			<p>
+					<strong>Shipment Declaration for Policy</strong>
+				</p>
+			
+					 <div>
+					 <span>
+					<strong>How would you like to provide Shipment Declaration? &nbsp&nbsp  </strong>
+				</span>
+        <label><input type="radio" name="colorRadio"  value="manually"> Manually</label>
+        <label><input type="radio" name="colorRadio" value="upload"> Upload xl File</label>
+        
+    </div>
+
+					
+						<div  class="form-group row upload showhide">
+						<div id="xluploadhead" >
+						
+						<form    id="upload-file-form"  method="post" enctype="multipart/form-data">
+						
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<div class="form-group row">
+											<div class="col">
+												<div class="form-group">
+												<h6>Download Excel<a th:href="@{/declarationScr.xlsx}" id="xldownload" download> Template file</a> </h6>
+													<label><b>Fileupload</b></label>
+													<div class="custom-file">
+														<input type="file" class="custom-file-input" id="uploadfile" name="uploadfile"	aria-describedby="inputGroupFileAddon04"> <label
+															class="custom-file-label" for="inputGroupFile04">Choose file</label>
+													</div>
+													<div>
+											<small id="format">Supported Format:Excel</small>
+											<b id="errormsg"></b> 
+											<small id="size" class="float-right">Max Size:10MB</small>
+											<input type="hidden" th:value="${policyNo}" id ="policyNo"></input>
+											</div>
+											 <div class="form-actions mt-1">
+								<input id="Submit" type="button" class="btn btn-primary" value="Upload"></input>
+							 </div>
+												</div>
+											</div>
+										</div>
+									</div>
+									
+									
+							<div th:text="${message}"></div>
+							<div id="errorDiv" style="display: none;">
+										<div class="form-group">
+											<div class="col-md-12">
+												<span class="text-warning font-weight-bold" id="xlerrorwarningtxt" style="display: none;">Duplicate rows were found in sheet</span>
+												<span class="text-danger font-weight-bold">Invalid / Missing records found in uploaded Excel file. Please download <a th:href="@{/EXCEL_UPLOAD_ERRORS.txt}" id="downloadErrorFile" download>Error File</a> for details.</span>
+											</div>
+										</div>
+									</div>
+									
+									<div class="alert alert-warning warng" role="alert" id ="excelWarning" style="display: none;">
+                						<span id="xlspan"></span>
+                						<br/>
+                						<span>Please download <a th:href="@{/EXCEL_UPLOAD_ERRORS.txt}" id="downloadErrorFile" download>Error File</a> for details.</span>
+              						</div>
+							
+							 
+					</form>
+					<div th:text="${message}"></div>
+					</div>
+					<!-- start of edit form -->
+					<hr/>
+					<div class="card-body">
+												<form id="editform" style="display: none">
+								<div class="loader"></div>
+								<div>
+									<p>
+										<strong class="text-danger">Edit Shipment </strong>
+									</p>
+								</div>
+								<div class="form-group row ml-1 mr-1 ">
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Date of
+											Shipment <span class="required">*</span>
+										</label> <select class="form-control" id="editShipmentDt">
+											<option value="">Day</option>
+										</select>
+										 <span class="errorMsg"></span>
+									</div>
+									<div class="col-sm-6 mb-2 mb-sm-0">
+										<label class="custom-smile-form-label">GR/PP/SB/invoice
+											No.<span class="required">*</span>
+										</label> <input type="text" class="form-control"
+											id="editGrPpSbInvoiceNo" placeholder="GR/PP/SB/invoice No." />
+											<span class="errorMsg"></span>
+									</div>
+									 
+								</div>
+
+								<div class="form-group row ml-1 mr-1 ">
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Commodity<span
+											class="required">*</span></label> <select class="form-control"
+											id="editcommodityCd">
+											<option value="">Select Commodity</option>
+											<optgroup th:each="commodity : ${commodities}"
+												th:label="${commodity.key}">
+												<option th:each="commodityList : ${commodity.value}"
+													th:value="${commodityList}" th:text="${commodityList}">
+												</option>
+											</optgroup>
+										</select>
+										<span class="errorMsg"></span>
+									</div>
+									<div class="col-sm-6 mb-2 mb-sm-0">
+										<label class="custom-smile-form-label">Destination
+											Country<span class="required">*</span>
+										</label> <select class="form-control" id="editdestCountryCd">
+											<option value="">Select Country</option>
+											<option th:each="country : ${mapCountries}"
+												th:value="${country.countryName}"
+												th:utext="${country.countryName}"></option>
+
+										</select>
+										<span class="errorMsg"></span>
+									</div>
+								</div>
+									<div class="form-group row ml-1 mr-1">
+									<div class="col-sm-12 mb-6 mb-sm-0">
+										<label class="custom-smile-form-label">Buyer Code<span
+											class="required">*</span></label> <input type="text"
+											class="form-control" id="editbyrCode"
+											placeholder="Buyer Name" />
+											<span class="errorMsg"></span>
+									</div>
+								</div>
+								
+
+								<div class="form-group row ml-1 mr-1">
+									<div class="col-sm-12 mb-6 mb-sm-0">
+										<label class="custom-smile-form-label">Buyer Name<span
+											class="required">*</span></label> <input type="text"
+											class="form-control" id="editbyrName"
+											placeholder="Buyer Name" /><span class="errorMsg"></span>
+									</div>
+									
+								</div>
+
+								<div class="form-group row ml-1 mr-1">
+									<div class="col-sm-12 mb-6 mb-sm-0">
+										<label class="custom-smile-form-label">Buyer's Address
+											Line<span class="required">*</span>
+										</label> <input type="text" class="form-control" id="editbyrAddrLine"
+											placeholder="Enter Address.." />
+											<span class="errorMsg"></span>
+									</div>
+									
+								</div>
+								<div class="form-group row ml-1 mr-1">
+									<div class="col-sm-12 mb-6 mb-sm-0">
+										<label class="custom-smile-form-label">Buyer's Address
+											Street<span class="required">*</span>
+										</label> <input type="text" class="form-control"
+											id="editbyrAddrStreet" placeholder="Enter Address.." />
+											<span class="errorMsg"></span>
+									</div>
+									
+								</div>
+
+								<div class="form-group row ml-1 mr-1">
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Buyer's City<span
+											class="required">*</span></label> <input type="text"
+											class="form-control" id="editbyrAddrCity"
+											placeholder="Enter City" />
+									</div><span class="errorMsg"></span>
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Buyer's State<span
+											class="required">*</span></label> <input type="text"
+											class="form-control" id="editbyrAddrState"
+											placeholder="Enter State" />
+											<span class="errorMsg"></span>
+									</div>
+								</div>
+
+								<div class="form-group row ml-1 mr-1">
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Buyer's Country<span
+											class="required">*</span></label> <select class="form-control"
+											id="editbyrCountryCd">
+											<option value="">Select Country</option>
+											<option th:each="country : ${mapCountries}"
+												th:value="${country.countryName}"
+												th:utext="${country.countryName}"></option>
+
+										</select><span class="errorMsg"></span>
+									</div>
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Buyer's Postal
+											Code<span class="required">*</span>
+										</label> <input type="text" class="form-control"
+											id="editbyrAddrPincode" placeholder="Enter Postal Code" />
+									<span class="errorMsg"></span></div>
+								</div>
+
+								<div class="form-group row ml-1 mr-1 ">
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Payment Country<span
+											class="required">*</span></label> <select class="form-control"
+											id="editcountryFromWhichPaymentToBeRecievedCd">
+											<option value="">Select Country</option>
+											<option th:each="country : ${mapCountries}"
+												th:value="${country.countryName}"
+												th:utext="${country.countryName}"></option>
+
+										</select>
+										<span class="errorMsg"></span>
+									</div>
+									<div class="col-sm-6 mb-2 mb-sm-0">
+										<label class="custom-smile-form-label">Source Country<span
+											class="required">*</span></label> <select class="form-control"
+											id="editsourceCountryCd">
+											<option value="">Select Country</option>
+											<option th:each="country : ${mapCountries}"
+												th:value="${country.countryName}"
+												th:utext="${country.countryName}"></option>
+
+										</select>
+										<span class="errorMsg"></span>
+									</div>
+								</div>
+
+										<div class="form-group row ml-1 mr-1 ">
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Destination Country<span
+											class="required">*</span></label> <select class="form-control"
+											id="editDestinationcountryCd">
+											<option value="">Select Country</option>
+											<option th:each="country : ${mapCountries}"
+												th:value="${country.countryName}"
+												th:utext="${country.countryName}"></option>
+
+										</select>
+										<span class="errorMsg"></span>
+									</div>
+									<div class="col-sm-6 mb-2 mb-sm-0">
+										<label class="custom-smile-form-label">Giv INR<span
+											class="required">*</span></label><input type="text"
+											class="form-control" id="editGivInr"
+											placeholder="Enter State" /> 
+										<span class="errorMsg"></span>
+									</div>
+								</div>
+								<div class="form-group row ml-1 mr-1 ">
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Terms of
+											Payment<span class="required">*</span>
+										</label> <select class="form-control" id="edittopId">
+											<option value="" hidden="true">Select Payment Terms</option>
+											<option th:each="top : ${top}" th:value="${top.top}"
+												th:utext="${top.top}"></option>
+
+										</select>
+										<span class="errorMsg"></span>
+									</div>
+									<div class="col-sm-6 mb-2 mb-sm-0">
+										<label class="custom-smile-form-label">Due Date of
+											Payment </label> <input type="date" class="form-control"
+											id="editdueDtOfPayment" /><span class="errorMsg"></span>
+									</div>
+								</div>
+
+								<div class="form-group row ml-1 mr-1 ">
+									<div class="col-sm-6 mb-3 mb-sm-0">
+										<label class="custom-smile-form-label">Date of
+											Realization(if realized)<span class="required">*</span>
+										</label> <input type="date" class="form-control"
+											id="editrealizationDt" /><span class="errorMsg"></span>
+									</div>
+								</div>
+							<!-- 	<div id="editLcOpeningBankDetails"> -->
+								 <!-- style="display: none;" -->
+											<hr /> 
+											<h3>LC Opening Bank Details</h3>
+											<div class="form-group row ml-1 mr-1">
+									<div class="col-sm-12 mb-2 mb-sm-0">
+										<label class="custom-smile-form-label">LC opening Bank
+											Name<span class="required">*</span>
+										</label> <input type="text" class="form-control"
+											id="editlcOpeningBankName" placeholder="Bank Name" />
+								<span class="errorMsg"></span>	</div></div>
+									<div class="form-group row ml-1 mr-1">
+									<div class="col-sm-12 mb-2 mb-sm-0">
+										<label class="custom-smile-form-label">LC opening Bank
+											Code<span class="required">*</span>
+										</label> <input type="text" class="form-control"
+											id="editlcOpeningBankCode" placeholder="Bank Name" />
+								<span class="errorMsg"></span>	</div></div>
+
+
+
+									<div class="form-group row ml-1 mr-1">
+										<div class="col-sm-12 mb-6 mb-sm-0">
+											<label class="custom-smile-form-label">Bank's Address
+												Line<span class="required">*</span>
+											</label> <input type="text" class="form-control"
+												id="editlcOpeningBankAddrLine" placeholder="Enter Address.." />
+										</div>
+									</div>
+									<div class="form-group row ml-1 mr-1">
+										<div class="col-sm-12 mb-6 mb-sm-0">
+											<label class="custom-smile-form-label">Bank's Address
+												Street<span class="required">*</span>
+											</label> <input type="text" class="form-control"
+												id="editlcOpeningBankAddrStreet"
+												placeholder="Enter Address.." />
+								<span class="errorMsg"></span></div>
+									</div>
+
+									<div class="form-group row ml-1 mr-1">
+										<div class="col-sm-6 mb-3 mb-sm-0">
+											<label class="custom-smile-form-label">Bank's City<span
+												class="required">*</span></label> <input type="text"
+												class="form-control" id="editlcOpeningBankAddrCity"
+												placeholder="Enter City"></input>
+												<span class="errorMsg"></span>
+										</div>
+										<div class="col-sm-6 mb-3 mb-sm-0">
+											<label class="custom-smile-form-label">Bank's State<span
+												class="required">*</span></label> <input type="text"
+												class="form-control" id="editlcOpeningBankAddrState"
+												placeholder="Enter State"></input>
+												<span class="errorMsg"></span>
+										</div>
+									</div>
+
+									<div class="form-group row ml-1 mr-1">
+										<div class="col-sm-6 mb-3 mb-sm-0">
+											<label class="custom-smile-form-label">Bank's Country<span
+												class="required">*</span></label> <select class="form-control"
+												id="editlcOpeningBankAddrCountryCd">
+												<option value="">Select Country</option>
+												<option th:each="country : ${mapCountries}"
+													th:value="${country.countryName}"
+													th:utext="${country.countryName}"></option>
+
+											</select>
+											<span class="errorMsg"></span>
+										</div>
+										<div class="col-sm-6 mb-3 mb-sm-0">
+											<label class="custom-smile-form-label">Bank's Postal
+												Code<span class="required">*</span>
+											</label> <input type="text" class="form-control"
+												id="editlcOpeningBankAddrPincode"
+												placeholder="Enter Postal Code"></input>
+									<span class="errorMsg"></span>	</div>
+									</div>
+								
+
+
+								<div class="form-actions mt-1 text-center" id="action">
+									<button type="button" class="btn btn-success"
+									
+										id="update">Save</button>
+									<button type="button" class="btn btn-light"
+										id="cancelEdit">Cancel</button>
+								</div><!-- btn custom-smile-btn-save -->
+								<!-- btn custom-smile-btn-cancel -->
+							</form>
+					
+					</div>
+
+							<!-- end of edit form -->
+					
+					
+											 <div class="card shadow mb-4 mt-2 border-left-danger" id="#divXLDatatable">
+
+								<!-- card header -->
+								<div class="card-header custom-smile-form-header">
+									Shipments
+
+									<button type="button"
+										class="btn btn-primary float-right btn-sm" id="submitTableXL">Submit</button>
+									<!-- <button type="button"
+										class="btn btn-primary float-right view btn-sm mr-1"
+										id="vieweditmodelButton"  data-toggle="modal" data-target="#vieweditmodel" >Edit/View</button> -->
+									<button class="btn text-warning float-right mr-1" id="vieweditmodelButton"  >
+								<!-- onclick="preupdate()" -->
+								<i class="fas fa-edit fa-lg"></i>Edit
+							</button>
+								</div>
+							<!-- end of card header -->
+
+								<div class="card-body">
+
+
+									<table
+										class="table table-bordered table-responsive table-striped item"
+										id="example2" width="100%" cellspacing="0">
+
+										<thead>
+											<tr>
+
+												<th>Day of Shipment</th>
+												<th>GR/PP/SB/invoice No.</th>
+												<th>Commodity</th>
+												<th>Destination Country</th>
+												<th>Buyer's code</th>
+												<th>Buyer Name</th>
+												<th>Buyer's Address Line</th>
+												<th>Buyer's Address Street</th>
+												<th>Buyer's City</th>
+												<th>Buyer's State</th>
+												<th>Buyer's Country</th>
+												<th>Buyer's Postal Code</th>
+												<th>Payment Country</th>
+												<th>Source Country</th>
+												<th>Destination Country</th>
+												<th>Giv INR</th>
+												<th>Terms of Payment</th>
+												<th>Due Date of Payment</th>
+												<th>Date of Realization(if realized)</th>
+												<th>LC Code</th>
+												<th>LC opening Bank Name</th>
+												<th>Bank's Address Line</th>
+												<th>Bank's Address Street</th>
+												<th>Bank's City</th>
+												<th>Bank's State</th>
+												<th>Bank's Country</th>
+												<th>Bank's Postal Code</th>
+												<th>Select Row</th>
+												<th>Delete</th>
+
+											</tr>
+										</thead>
+
+										<tfoot>
+											<tr>
+												<th>Day of Shipment</th>
+												<th>GR/PP/SB/invoice No.</th>
+												<th>Commodity</th>
+												<th>Destination Country</th>
+												<th>Buyer Code</th>
+												<th>Buyer Name</th>
+												<th>Buyer's Address Line</th>
+												<th>Buyer's Address Street</th>
+												<th>Buyer's City</th>
+												<th>Buyer's State</th>
+												<th>Buyer's Country</th>
+												<th>Buyer's Postal Code</th>
+												<th>Payment Country</th>
+												<th>Source Country</th>
+												<th>Destination Country</th>
+												<th>Giv INR</th>
+												<th>Terms of Payment</th>
+												<th>Due Date of Payment</th>
+												<th>Date of Realization(if realized)</th>
+												<th>LC Code</th>
+												<th>LC opening Bank Name</th>
+												<th>Bank's Address Line</th>
+												<th>Bank's Address Street</th>
+												<th>Bank's City</th>
+												<th>Bank's State</th>
+												<th>Bank's Country</th>
+												<th>Bank's Postal Code</th>
+												<th>Select Row</th>
+												<th>Delete</th>
+
+											</tr>
+										</tfoot>
+										<tbody id="tbody">
+
+
+										</tbody>
+									</table>
+
+									<span class="exportbuttons"> </span>
+								</div>
+							</div>
+							
+														
+																<!-- Start of view modal -->
+<!-- 					<div class="modal fade custom-smile-form-header" id="vieweditmodel" role="dialog">
+						<div class="modal-dialog">
+							Modal content
+							<form class="modal-content" id="editor">
+								<div class="modal-header bg-light">
+									<h4 class="modal-title custom-smile-form-header"
+										style="color: black;">View Record</h4>
+									<button class="btn text-warning">
+										<i class="fas fa-edit fa-lg"></i>
+									</button>
+									<button type="button" class="close" data-dismiss="modal">&times;</button>
+								</div>
+								<div class="modal-body">
+										<div class="form-group row ml-1 mr-1 ">
+											<div class="col-sm-6 mb-3 mb-sm-0">
+												<label class="custom-smile-form-label">Day of
+													Shipment </label> <input type="text" class="form-control"
+													id="editShipmentDt"></input>
+											</div>
+											<div class="col-sm-6 mb-2 mb-sm-0">
+												<label class="custom-smile-form-label">GR/PP/SB/invoice
+													No. </label> <input type="text" class="form-control"
+													id="editGrPpSbInvoiceNo"
+													placeholder="GR/PP/SB/invoice No." />
+											</div>
+										</div>
+
+										<div class="form-group row ml-1 mr-1 ">
+											<div class="col-sm-6 mb-3 mb-sm-0">
+												<label class="custom-smile-form-label">Commodity</label> <input
+													type="text" class="form-control" id="editcommodityCd"/>
+											</div>
+											<div class="col-sm-6 mb-2 mb-sm-0">
+												<label class="custom-smile-form-label">Destination
+													Country</label> <input type="text" class="form-control"
+													id="editdestCountryCd"/>
+											</div>
+										</div>
+										<div class="form-group row ml-1 mr-1">
+											<div class="col-sm-12 mb-6 mb-sm-0">
+												<label class="custom-smile-form-label">Buyer Code</label> <input
+													type="text" class="form-control" id="editbyrCode"
+													placeholder="Buyer Name" />
+											</div>
+											<div class="col-sm-12 mb-6 mb-sm-0">
+												<label class="custom-smile-form-label">Buyer Name</label> <input
+													type="text" class="form-control" id="editbyrName"
+													placeholder="Buyer Name" />
+											</div>
+										</div>
+
+										<div class="form-group row ml-1 mr-1">
+											<div class="col-sm-12 mb-6 mb-sm-0">
+												<label class="custom-smile-form-label">Buyer's
+													Address Line</label> <input type="text" class="form-control"
+													id="editbyrAddrLine" placeholder="Enter Address.." />
+											</div>
+											<div class="col-sm-12 mb-6 mb-sm-0">
+												<label class="custom-smile-form-label">Buyer's
+													Address Street</label> <input type="text" class="form-control"
+													id="editbyrAddrStreet" placeholder="Enter Address.." />
+											</div>
+										</div>
+
+										<div class="form-group row ml-1 mr-1">
+											<div class="col-sm-6 mb-3 mb-sm-0">
+												<label class="custom-smile-form-label">Buyer's City</label>
+												<input type="text" class="form-control"
+													id="editbyrAddrCity" placeholder="Enter City" />
+											</div>
+											<div class="col-sm-6 mb-3 mb-sm-0">
+												<label class="custom-smile-form-label">Buyer's State</label>
+												<input type="text" class="form-control"
+													id="editbyrAddrState" placeholder="Enter State" />
+											</div>
+										</div>
+
+										<div class="form-group row ml-1 mr-1">
+											<div class="col-sm-6 mb-3 mb-sm-0">
+												<label class="custom-smile-form-label">Buyer's
+													Country</label> <input type="text" class="form-control"
+													id="editbyrCountryCd"/>
+													
+											</div>
+											<div class="col-sm-6 mb-3 mb-sm-0">
+												<label class="custom-smile-form-label">Buyer's
+													Postal Code</label> <input type="text" class="form-control"
+													id="editbyrAddrPincode"
+													placeholder="Enter Postal Code" />
+											</div>
+										</div>
+
+										<div class="form-group row ml-1 mr-1 ">
+											<div class="col-sm-6 mb-3 mb-sm-0">
+												<label class="custom-smile-form-label">Payment
+													Country</label> <input type="text" class="form-control"
+													id="editcountryFromWhichPaymentToBeRecievedCd"/>
+											</div>
+											<div class="col-sm-6 mb-2 mb-sm-0">
+												<label class="custom-smile-form-label">Source
+													Country</label> <input type="text" class="form-control"
+													id="editsourceCountryCd"/>
+											</div>
+										</div>
+
+										<div class="form-group row ml-1 mr-1 ">
+											<div class="col-sm-6 mb-3 mb-sm-0">
+												<label class="custom-smile-form-label">Terms of
+													Payment</label> <input type="text" class="form-control" id="edittopId">
+											</div>
+											<div class="col-sm-6 mb-2 mb-sm-0">
+												<label class="custom-smile-form-label">Due Date of
+													Payment </label> <input type="text" class="form-control"
+													id="editdueDtOfPayment" />
+											</div>
+										</div>
+
+										<div class="form-group row ml-1 mr-1 ">
+											<div class="col-sm-6 mb-3 mb-sm-0">
+												<label class="custom-smile-form-label">Date of
+													Realization(if realized) </label> <input type="text"
+													class="form-control" id="editrealizationDt" />
+											</div>
+											<div class="col-sm-6 mb-2 mb-sm-0">
+												<label class="custom-smile-form-label">LC opening
+													Bank Code</label> <input type="text" class="form-control"
+													id="editlcOpeningBankCode" placeholder="Bank Name" />
+											</div>
+										</div>
+										<div class="form-group row ml-1 mr-1 ">
+										<div class="col-sm-6 mb-2 mb-sm-0">
+												<label class="custom-smile-form-label">LC opening
+													Bank Name</label> <input type="text" class="form-control"
+													id="editlcOpeningBankName" placeholder="Bank Name" />
+											</div>
+											<div class="col-sm-12 mb-6 mb-sm-0">
+												<label class="custom-smile-form-label">Bank's
+													Address Line</label> <input type="text" class="form-control"
+													id="editlcOpeningBankAddrLine"
+													placeholder="Enter Address.." />
+											</div>
+										</div>
+										<div class="form-group row ml-1 mr-1">
+											<div class="col-sm-12 mb-6 mb-sm-0">
+												<label class="custom-smile-form-label">Bank's
+													Address Street</label> <input type="text" class="form-control"
+													id="editlcOpeningBankAddrStreet"
+													placeholder="Enter Address.." />
+											</div>
+											<div class="col-sm-6 mb-3 mb-sm-0">
+												<label class="custom-smile-form-label">Bank's City</label> <input
+													type="text" class="form-control"
+													id="editlcOpeningBankAddrCity"
+													placeholder="Enter City" />
+											</div>
+										</div>
+
+										<div class="form-group row ml-1 mr-1">
+											
+											<div class="col-sm-6 mb-3 mb-sm-0">
+												<label class="custom-smile-form-label">Bank's State</label>
+												<input type="text" class="form-control"
+													id="editlcOpeningBankAddrState"
+													placeholder="Enter State" />
+											</div>
+											<div class="col-sm-6 mb-3 mb-sm-0">
+												<label class="custom-smile-form-label">Bank's
+													Country</label> <select class="form-control"
+													id="editlcOpeningBankAddrCountryCd">
+													<option value="" hidden="true">Select Country</option>
+
+												</select>
+											</div>
+										</div>
+
+										<div class="form-group row ml-1 mr-1">
+											<div class="col-sm-6 mb-3 mb-sm-0">
+												<label class="custom-smile-form-label">Bank's Postal
+													Code</label> <input type="text" class="form-control"
+													id="editlcOpeningBankAddrPincode"
+													placeholder="Enter Postal Code" />
+											</div>
+										</div>
+									
+
+
+								</div>
+								end of modal body
+								<div class="modal-footer">
+									<button type="button" class="btn custom-smile-btn-save" data-dismiss="modal" id="update">Save</button>
+									<button type="button" class="btn custom-smile-btn-cancel" data-dismiss="modal">Cancel</button>
+								</div>
+							</form>
+							end of modal-content
+
+						</div>
+					</div>	 -->
+					
+
+            </div> 
+				 
+
+		</div>
+
+		<!-- ACTUAL BODY CONTENT -->
+
+	</div></div>
+
+
+<!-- <script type="text/javascript">
+
+	  
+	$('#add').click(function() {
+	  var obj = {},
+	  obj.dateOfShipment = document.getElementById('dateOfShipment').value;
+	  obj.invoiceNo= document.getElementById('invoiceNo').value;
+	  obj.commodity= $('#commodity').val();
+	  obj.country= $('#country').val();
+	  obj.buyerName= document.getElementById('buyerName').value;
+	  obj.buyerAddress= document.getElementById('buyerAddress').value;
+	  obj.buyerStreet= document.getElementById('buyerStreet').value;
+	  obj.buyerCity= document.getElementById('buyerCity').value;
+	  obj.buyerState= document.getElementById('buyerState').value;
+	  obj.buyerCountry= $('#buyerCountry').val();
+	  obj.buyerPostal= document.getElementById('buyerPostal').value;
+	  obj.paymentCountry= $('#paymentCountry').val();
+	  obj.sourceCountry= $('#sourceCountry').val();
+	  obj.top= $('#top').val();
+	  obj.dueDate= document.getElementById('dueDate').value;
+	  obj.dateOfRealization= document.getElementById('dateOfRealization').value;
+	  obj.bankName= document.getElementById('bankName').value;
+	  obj.bankAddress= document.getElementById('bankAddress').value;
+	  obj.bankStreet= document.getElementById('bankStreet').value;
+	  obj.bankCity  = document.getElementById('bankCity').value;
+	  obj.bankState= document.getElementById('bankState').value;
+	  obj.bankCountry= $('#bankCountry').val();
+	  obj.bankPostal= document.getElementById('bankPostal').value;
+  
+	  console.log("********************"+obj);
+});
+</script> -->
+
+
+	<th:block layout:fragment="scripts">
+  		<!-- Data Tables -->
+	<script type="text/javascript" th:src="@{/webjars/startbootstrap-sb-admin-2/vendor/datatables/jquery.dataTables.min.js}"></script>
+	<script type="text/javascript" th:src="@{/webjars/startbootstrap-sb-admin-2/vendor/datatables/dataTables.bootstrap4.min.js}"></script>
+	<script type="text/javascript" th:src="@{/webjars/datatables-buttons/js/dataTables.buttons.min.js}"></script>
+	<script type="text/javascript" th:src="@{/webjars/datatables-buttons/js/buttons.html5.min.js}"></script>
+	<script type="text/javascript" th:src="@{/webjars/datatables-buttons/js/buttons.print.min.js}"></script>
+	<script type="text/javascript" th:src="@{/js/datatablejs/pdfmake.min.js}"></script>
+	<script type="text/javascript" th:src="@{/js/datatablejs/vfs_fonts.js}"></script>
+	<script type="text/javascript" th:src="@{/js/exporttable.js}"></script>
+	<script type="text/javascript" th:src="@{/js/exporttable2.js}"></script>
+	<script type="text/javascript" th:src="@{/js/buttonbootstrap4.js}"></script>
+  	<script type="text/javascript" th:src="@{https://cdn.datatables.net/responsive/2.2.5/js/dataTables.responsive.min.js}"></script>
+  		<script type="text/javascript" th:src="@{https://cdn.datatables.net/responsive/2.2.5/js/responsive.bootstrap.min.js}" ></script>
+	<!-- <script type="text/javascript" th:src="@{cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js}"></script>
+	<script type="text/javascript" th:src="@{cdn.datatables.net/plug-ins/1.10.15/sorting/datetime-moment.js}"></script>
+	 --></th:block>
+</body>
+</html>
+

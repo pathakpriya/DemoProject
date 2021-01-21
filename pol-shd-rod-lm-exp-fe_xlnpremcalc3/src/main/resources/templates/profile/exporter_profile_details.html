@@ -1,0 +1,1293 @@
+
+<script>
+$(document).ready(function(){
+	$("#bankTable").dataTable();
+	
+	$("#btnEditFirstTab").click(function(){
+		console.log("in edit");
+		$($("#exporterDetailsForm").find('input[type="text"][readonly]')).each(function(){
+			$(this).attr('readonly',false) 
+			});	
+		$("#exporterCode").attr('readonly', true);
+		
+		$($("#exporterDetailsForm").find('input[type="radio"][disabled]')).each(function(){ 
+			$(this).attr('disabled',false) 
+			});	
+		
+		$($("#exporterDetailsForm").find('input[type="date"][readonly]')).each(function(){ 
+			$(this).attr('readonly',false) 
+			});	
+		
+		$($("#exporterDetailsForm").find('select[disabled]')).each(function(){ 
+			$(this).attr('disabled',false) 
+			});	
+		$("#saveDiv").attr('hidden',false);
+		$(this).attr('hidden',true);
+		$("#btnEditing").attr('hidden',false);
+		
+		$('html, body').animate({
+  			scrollTop: $("#target").offset().top
+  		},500);
+	});
+	
+	$("#btnCancel").click(function(){
+		$($("#exporterDetailsForm").find('input[type="text"]')).each(function(){ 
+			$(this).attr('readonly',true) });
+		
+		$($("#exporterDetailsForm").find('input[type="radio"]')).each(function(){ 
+			$(this).attr('disabled',true) });
+		
+		$($("#exporterDetailsForm").find('input[type="date"]')).each(function(){ 
+			$(this).attr('readonly',true) });	
+		
+		$($("#exporterDetailsForm").find('select')).each(function(){ 
+			$(this).attr('disabled',true) });
+		
+		$("#saveDiv").attr('hidden',true);
+		$("#btnEditing").attr('hidden',true);
+		$("#btnEditFirstTab").attr('hidden', false);
+		
+		$('html, body').animate({
+  			scrollTop: $("#target").offset().top
+  		},500);
+	});
+	
+	$("#exporterDetailsTab").click(function(){
+		$("#exporterDetailsTabControls").show();
+		$("#bankDetailsTabControls").hide();
+		$("#contactDetailsTabControls").hide();
+	});
+	
+	$("#bankDetailsTab").click(function(){
+		$("#exporterDetailsTabControls").hide();
+		$("#bankDetailsTabControls").show();
+		$("#contactDetailsTabControls").hide();
+	});
+	
+	$("#contactDetailsTab").click(function(){
+		$("#exporterDetailsTabControls").hide();
+		$("#bankDetailsTabControls").hide();
+		$("#contactDetailsTabControls").show();
+	});
+	
+	$("#btnAddNewBank").click(function(){
+		/*Thymeleaf internally creates variables with same name as the mapped object properties*/
+		var exporterCd = $("exporterCode").val();
+		var ieCd = $("ieCode").val();
+		
+		$("#bankTarget").load("/exporter/profile/new-bank/"+$(exporterCode).val()+"/"+$(ieCode).val());
+		
+		$('html, body').animate({
+  			scrollTop: $("#bankTarget").offset().top
+  		},500);
+	});
+	
+	
+	/* $("input[name='mobile']").on('input',function(){
+		console.log("change");
+		$("#mobileStatus").attr('hidden', true);
+		$("#verifyMobileButton").attr('hidden', false);
+	}); */
+	
+	/* $("input[name='email']").on('input', function(){
+		console.log("change");
+		$("#emailStatus").attr('hidden', true);
+		$("#verifyEmailButton").attr('hidden', false);
+	}); */
+});
+
+function mobileInput(mobile){
+	$(mobile).parent().parent().find('div.col-lg-1#mobileStatus').attr('hidden', true);
+	$(mobile).parent().parent().find('div.col-lg-1#verifyMobileButton').attr('hidden', false);
+}
+
+function emailInput(email){
+	$(email).parent().parent().find('div.col-lg-2#emailStatus').attr('hidden', true);
+	$(email).parent().parent().find('div.col-lg-2#verifyEmailButton').attr('hidden', false);
+}
+
+function viewBankDetails(viewButton){
+	var tdAccNum = $(viewButton).parent().parent().children()[0];
+	var accountNum = $(tdAccNum).html();
+	
+	$("#bankTarget").load("/exporter/profile/bank/"+accountNum);
+	
+	$('html, body').animate({
+			scrollTop: $("#bankTarget").offset().top
+		},500);
+}
+
+/*  Asynchronous server side validation*/
+function validateContact(formName){
+	console.log("validating");
+	var name = $("#"+formName).find("#name").val();
+	console.log(name);
+	
+	$.ajax({
+		type : "POST",
+		url : "/exporter/profile/contact/update/validate",
+		data : $("#"+formName).serialize(),
+		success : function(response){
+			var validationResult = response;
+			console.log(validationResult);
+			
+			var errorElements = ["locationError", "nameError", "designationError", "mobileError", "emailError", "remarksError"];
+			var verified = checkValidationResult(validationResult,formName, errorElements);
+			
+			if(verified)
+				updateContactDetails(formName);
+		},
+		error : function(error){
+			console.log(error);
+		}
+	});
+}
+
+function checkValidationResult(validationResult, formName, errorElements){
+	console.log('validation result');
+	console.log(validationResult);
+	
+		
+	var keys = [];
+	
+	for(var k in validationResult) 
+		keys.push(k);
+	
+	console.log('keys');
+	console.log(keys);
+	/*
+	Form Validated*/
+	if(keys.length == 1){
+		$("#"+formName).parent().find("#globalFormError").attr('hidden', true);
+		errorElements.forEach(function(item){
+			$("#"+formName).find("#"+item).attr('hidden',true);
+		});
+			return true;
+		//$("#"+formName).submit();
+	}
+	/*
+	Validation errors*/
+	else{
+		$("#"+formName).parent().find("#globalFormError").attr('hidden', false);
+		for(i=0; i<keys.length; i++){
+			if(keys[i] == "success")
+				continue;
+			var key = keys[i];
+			console.log("error in "+key);
+			if(validationResult[key] != null){
+				$("#"+formName).find("#"+key+"Error").attr('hidden', false);
+				$("#"+formName).find("#"+key+"Error").find('label').html(validationResult[key]);
+			}
+			else{
+				$("#"+formName).find("#"+key+"Error").attr('hidden', true);
+			}
+		}
+			return false;
+	}	
+}
+
+function editContact(formName, editButton){
+	console.log("edit cont");
+	$($("#"+formName).find('input[type="text"][readonly]')).each(function(){ 
+		$(this).attr('readonly',false) 
+		});	
+	
+	$($("#"+formName).find('select[disabled]')).each(function(){ 
+		$(this).attr('disabled',false) 
+		});	
+	$("#"+formName).find("#saveContactDiv").show();
+	$(editButton).attr('hidden',true);
+	$("#"+formName).find("#btnEditingContact").attr('hidden',false);
+	
+	 /* $('html, body').animate({
+			scrollTop: $("#"+formName).find("#saveContactDiv").offset().top
+		},500);  */
+}
+
+function cancelContactEditing(formName){
+	$($("#"+formName).find('input[type="text"]')).each(function(){ 
+		$(this).attr('readonly',true) });
+	
+	
+	$($("#"+formName).find('select')).each(function(){ 
+		$(this).attr('disabled',true) });
+	
+	$("#"+formName).find("#saveContactDiv").hide();
+	$("#"+formName).find("#btnEditingContact").attr('hidden',true);
+	$("#"+formName).find("#btnEditContact").attr('hidden', false);
+	
+	$("#contactFormError").attr('hidden', true);
+	var elements = ["locationError", "nameError", "designationError", "mobileError", "emailError", "remarksError"]
+	elements.forEach(function(item){
+		$("#"+formName).find("#"+item).attr('hidden', true);
+	});
+	
+	$("#"+formName).find("#mobileStatus").attr('hidden', false);
+	$("#"+formName).find("#verifyMobileButton").attr('hidden', true);
+	$("#"+formName).find("#emailStatus").attr('hidden', false);
+	$("#"+formName).find("#verifyEmailButton").attr('hidden', true);
+}
+
+/*  Asynchronous server submission of exporter basic details (First tab)
+ */
+function submitExporterDetails(formName){
+	$.ajax({
+		type : "POST",
+		url : "/exporter/profile/update",
+		data : $("#"+formName).serialize(),
+		success : function(response){
+			console.log(response);
+			if(response.success == true){
+				$('.loader').fadeIn();
+				$('.loader').fadeOut(1000);
+				$("#btnCancel").trigger('click');
+				$("#divProfileUpdateSuccess").show();
+			}
+				
+		},
+		error : function(error){
+			console.log(error);
+		}
+	});
+}
+
+/*  Asynchronous server submission of Contact details*/
+function updateContactDetails(formName){
+	$.ajax({
+		type : "POST",
+		url : "/exporter/profile/contact/update",
+		data : $("#"+formName).serialize(),
+		success : function(response){
+			console.log(response);
+			if(response.success == true){
+				$('.loader').fadeIn();
+				$('.loader').fadeOut(1000);
+				
+				cancelContactEditing(formName);
+				
+				$("#divContactUpdateSuccess").show();
+			}
+				
+		},
+		error : function(error){
+			console.log(error);
+		}
+	});
+}
+
+
+
+
+</script>
+
+<div class="card shadow mb-4 mt-2" id="divExporterRegDetails">
+	<!--card header-->
+
+	<div class="card-header py-3">
+
+		<div class="form -group row">
+			<div class="col-sm-10 mb-3 mb-sm-0">
+				<h6 class="m-0 font-weight-bold text-primary" id="divHead">View
+					All Exporter Profiles</h6>
+			</div>
+		</div>
+	</div>
+	<!--end of card header-->
+	<!-- card body -->
+	<div class="card-body">
+		<ul class="nav nav-tabs" id="myTab" role="tablist"
+			style="margin-bottom: 20px;">
+			<li class="nav-item" id="exporterDetailsTab"><a
+				class="nav-link active" id="home-tab" data-toggle="tab" href="#home"
+				role="tab" aria-controls="home" aria-selected="true"> Basic Details</a></li>
+			<li class="nav-item" id="bankDetailsTab"><a class="nav-link"
+				id="bank-tab" data-toggle="tab" href="#profile" role="tab"
+				aria-controls="profile" aria-selected="false">Bank Details</a></li>
+			<li class="nav-item" id="contactDetailsTab"><a class="nav-link"
+				id="contact-tab" data-toggle="tab" href="#contact" role="tab"
+				aria-controls="contact" aria-selected="false">Contact Details</a></li>
+			<!-- <li class="nav-item"><a class="nav-link" id="address-tab"
+				data-toggle="tab" href="#contact" role="tab" aria-controls="contact"
+				aria-selected="false">Addresses</a></li>	
+			<li class="nav-item"><a class="nav-link" id="partner-tab"
+				data-toggle="tab" href="#contact" role="tab" aria-controls="contact"
+				aria-selected="false">Partners Details</a></li>
+			<li class="nav-item"><a class="nav-link" id="sister-tab"
+				data-toggle="tab" href="#contact" role="tab" aria-controls="contact"
+				aria-selected="false">Sister Concerns</a></li>
+			
+			<li class="nav-item"><a class="nav-link" id="commodity-tab"
+				data-toggle="tab" href="#contact" role="tab" aria-controls="contact"
+				aria-selected="false">Commodities</a></li>
+			<li class="nav-item"><a class="nav-link" id="document-tab"
+				data-toggle="tab" href="#contact" role="tab" aria-controls="contact"
+				aria-selected="false">Documents</a></li>	 -->			
+			<!-- <li id="bankDetailsTabControls" style="display: none;"><a
+				class="btn btn-success btn-icon-split float-right"
+				id="btnAddNewBank"> <span class="icon text-white-50"> <i
+						class="fas fa-plus"></i>
+				</span> <span class="text" style="color: white;">Add New Bank</span>
+			</a></li> -->
+			<li id="contactDetailsTabControls" style="display: none;"></li>
+		</ul>
+		<div class="tab-content" id="myTabContent">
+			<!-- Exporter Details -->
+			<div class="tab-pane fade show active" id="home" role="tabpanel"
+				aria-labelledby="home-tab" style="">
+				<form th:action="@{/exporter/profile/update}" th:object="${profile}"
+					method="post" id="exporterDetailsForm">
+
+					<div id="divProfileUpdateSuccess" style="display:none;">
+						<div class="row" style="margin-bottom: 0px;">
+						<div class="col-lg-12" style="text-align: center;">
+							<div class="alert alert-success alert-dismissible fade show" style="margin-bottom:0px;" role="alert">
+							  Exporter Details Updated Successfully!
+							  <button type="button" class="close" data-dismiss="alert" aria-label="Close" 
+							  onclick='$("#divProfileUpdateSuccess").hide()' id="btnDissmiss">
+							    <span aria-hidden="true">&times;</span>
+							  </button>
+							</div>
+						</div>
+					</div><hr>
+					</div>
+					
+					
+
+
+					<div class="row" style="text-align: center; margin-bottom:0px;">
+						<div class="col-lg-12">
+							<nav
+								class="navbar navbar-expand navbar-light topbarbgcolor topbar static-top shadow sticky-top"
+								 style="margin-bottom: 15px;">
+
+								<button id="sidebarToggleTop"
+									class="btn btn-link d-md-none rounded-circle mr-3">
+									<i class="fa fa-bars"></i>
+								</button>
+								<span style="color: white;"><b th:text="${profile.regCompanyName}"></b></span>
+								<!-- Topbar Navbar -->
+								<ul class="navbar-nav ml-auto">
+									<li style="padding-top: 5px;"><span
+										class="badge badge-light"> Last Updated By: </span> <span
+										class="text-light" th:text="${profile.lastUpdatedBy}">
+									</span> <span class="text-light"
+										th:if="${profile.lastUpdatedBy == null}"> N.A. </span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									</li>
+									<li style="padding-top: 5px;"><span
+										class="badge badge-light"> Last Updated Date: </span> <span
+										class="text-light" th:text="${profile.lastUpdatedDate}">
+									</span> <span class="text-light"
+										th:if="${profile.lastUpdatedDate == null}"> N.A. </span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									</li>
+									<li style="padding-top: 5px;"><a href="#"
+										style="color: #f6c23e;">View Update History</a>&nbsp;&nbsp;&nbsp;
+									</li>
+									<li>
+										<button class="btn text-warning" data-toggle="modal"
+											type="button" id="btnEditFirstTab">
+											<i class="fas fa-edit fa-lg"></i>Edit
+										</button>
+										<button class="btn btn-warning btn-sm" id="btnEditing" hidden="true"
+											style="pointer-events: none;" type="button" >[Editing]</button>
+									</li>
+								</ul>
+
+							</nav>
+						</div>
+					</div>
+					<div class="row" style="margin-bottom: 10px; text-align: center;">
+						<div class="col-lg-3" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Exporter Code:</b></label>
+						</div>
+						<div class="col-lg-3">
+							<input class="form-control float-left" type="text" placeholder=""
+								th:field="*{exporterCode}" readonly>
+						</div>
+						
+						<div class="col-lg-3" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>IE Code:</b></label>
+						</div>
+						<div class="col-lg-3">
+							<input class="form-control float-left" type="text" placeholder=""
+								th:field="*{ieCode}" readonly>
+						</div>
+					</div>
+					
+					<div class="row" style="margin-bottom: 10px; text-align: center;">
+						<div class="col-lg-3" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Registered Company Name:</b></label>
+						</div>
+						<div class="col-lg-3">
+							<input class="form-control float-left" type="text" placeholder=""
+								th:field="*{regCompanyName}" readonly>
+						</div>
+						
+						<div class="col-lg-3" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Company Incorporation Date:</b></label>
+						</div>
+						<div class="col-lg-3">
+							<input class="form-control float-left" type="date"
+								th:field="*{companyIncorporationDate}" readonly>
+						</div>
+					</div>
+					
+					<div class="row" style="margin-bottom: 10px; text-align: center;">
+						<div class="col-lg-3" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Legal Constitution:</b></label>
+						</div>
+						<div class="col-lg-3">
+							<select class="form-control float-left"
+								th:field="*{legalConstitution.legalConstitutionId}" disabled>
+								<option th:each="legalConstitution : ${legalConstitutions}"
+									th:value="${legalConstitution.legalConstitutionId}"
+									th:text="${legalConstitution.typeOfLegalConstitution}"></option>
+							</select>
+						</div>
+						
+						<div class="col-lg-3" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>PAN:</b></label>
+						</div>
+						<div class="col-lg-3 float-left">
+							<input type="text" class="form-control" placeholder=""
+								th:field="*{panNum}" readonly>
+						</div>
+					</div>
+					
+					<div class="row" style="margin-bottom: 10px; text-align: center;">
+						<div class="col-lg-3" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Is Exporter in RBI
+									Caution List:</b></label>
+						</div>
+						<div class="col-lg-3" style="margin-top:7px;">
+							<input type="radio" th:value="true" class="float-left" style="margin-top:7px;"
+								th:field="${profile.inRbiCautionList}" disabled/>&nbsp;&nbsp;<label class="float-left">&nbsp;Yes&nbsp;&nbsp;&nbsp;&nbsp;</label>
+							<input type="radio" th:value="false"  class="float-left"  style="margin-top:7px;"
+								th:field="${profile.inRbiCautionList}" disabled>&nbsp;&nbsp;<label class="float-left">&nbsp;No&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						</div>
+						
+						<div class="col-lg-3" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Status Holder:</b></label>
+						</div>
+						<div class="col-lg-3" style="margin-top:7px;">
+							<input type="radio" th:value="true" class="float-left" style="margin-top:7px;"
+								th:field="${profile.statusHolder}" disabled/>&nbsp;&nbsp;<label class="float-left">&nbsp;Yes&nbsp;&nbsp;&nbsp;&nbsp;</label>
+							<input type="radio" th:value="false"  class="float-left"  style="margin-top:7px;"
+								th:field="${profile.statusHolder}" disabled>&nbsp;&nbsp;<label class="float-left">&nbsp;No&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						</div>
+					</div>
+					
+					<div class="row" style="margin-bottom: 10px; text-align: center;">
+						<div class="col-lg-3" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Is Exporter MSME:</b></label>
+						</div>
+						<div class="col-lg-3" style="margin-top:7px;">
+							<input type="radio" th:value="true" class="float-left" style="margin-top:7px;"
+								th:field="${profile.msme}" disabled/>&nbsp;&nbsp;<label class="float-left">&nbsp;Yes&nbsp;&nbsp;&nbsp;&nbsp;</label>
+							<input type="radio" th:value="false"  class="float-left"  style="margin-top:7px;"
+								th:field="${profile.msme}" disabled>&nbsp;&nbsp;<label class="float-left">&nbsp;No&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						</div>
+						
+						<div class="col-lg-3" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Is EOU:</b></label>
+						</div>
+						<div class="col-lg-3" style="margin-top:7px;">
+							<input type="radio" th:value="true" class="float-left" style="margin-top:7px;"
+								th:field="${profile.eou}" disabled/>&nbsp;&nbsp;<label class="float-left">&nbsp;Yes&nbsp;&nbsp;&nbsp;&nbsp;</label>
+							<input type="radio" th:value="false"  class="float-left"  style="margin-top:7px;"
+								th:field="${profile.eou}" disabled>&nbsp;&nbsp;<label class="float-left">&nbsp;No&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						</div>
+					</div>
+					
+					<div class="row" style="margin-bottom: 10px; text-align: center;">
+						<div class="col-lg-3" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Is SEZ:</b></label>
+						</div>
+						<div class="col-lg-3" style="margin-top:7px;">
+							<input type="radio" th:value="true" class="float-left" style="margin-top:7px;"
+								th:field="${profile.sez}" disabled/>&nbsp;&nbsp;<label class="float-left">&nbsp;Yes&nbsp;&nbsp;&nbsp;&nbsp;</label>
+							<input type="radio" th:value="false"  class="float-left"  style="margin-top:7px;"
+								th:field="${profile.sez}" disabled>&nbsp;&nbsp;<label class="float-left">&nbsp;No&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						</div>
+						
+						<div class="col-lg-3" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Is Exporter in EPC:</b></label>
+						</div>
+						<div class="col-lg-3" style="margin-top:7px;">
+							<input type="radio" th:value="true" class="float-left" style="margin-top:7px;"
+								th:field="${profile.epc}" disabled/>&nbsp;&nbsp;<label class="float-left">&nbsp;Yes&nbsp;&nbsp;&nbsp;&nbsp;</label>
+							<input type="radio" th:value="false"  class="float-left"  style="margin-top:7px;"
+								th:field="${profile.epc}" disabled>&nbsp;&nbsp;<label class="float-left">&nbsp;No&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						</div>
+					</div>
+					
+					
+
+					<div id="saveDiv" hidden>
+						<div class="row" style="margin-bottom: 10px; text-align: center;">
+							<div class="col-lg-3" style="text-align: left;">
+								<label style="margin-top: 7px;"><b>Remarks:</b></label>
+							</div>
+							<div class="col-lg-9">
+								<textarea class="form-control" th:field="${profile.metaRemarks}"></textarea>
+							</div>
+						</div>
+
+						<div class="row" style="margin-bottom: 10px; text-align: center;">
+							<div class="col-lg-12" style="text-align: right;">
+								<button type="button" class="btn btn-danger" id="btnCancel">Cancel</button>
+								<a class="btn btn-primary btn-icon-split" id="chgecolor"
+									onclick="submitExporterDetails('exporterDetailsForm')"> <span
+									class="icon text-white-50"> <i class="fas fa-check"></i>
+								</span> <span class="text" style="color: white;">Save</span>
+								</a>
+								<!-- <button type="button" class="btn btn-outline-primary">Save & Next</button> -->
+							</div>
+						</div>
+					</div>
+
+
+
+					<!-- Old layout -->
+					<!-- <div class="form-group">
+						<div class="row">
+							<div class="col-lg-4">
+								<label><b>Exporter Code</b></label> <input class="form-control"
+									type="text" placeholder="" th:field="*{exporterCode}" readonly>
+							</div>
+							<div class="col-lg-4">
+								<label><b>Registered Company Name</b></label> <input
+									class="form-control" type="text" th:field="*{regCompanyName}"
+									readonly>
+							</div>
+							<div class="col-lg-4">
+								<label><b>IE Code</b></label>
+								<div class="input-group mb-3">
+									<input type="text" class="form-control" placeholder=""
+										th:field="*{ieCode}" readonly aria-describedby="button-addon2">
+									<div class="input-group-append">
+										<button class="btn text-primary" id="proposalViewButton">
+											<i class="fas fa-eye fa-lg"></i>
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-lg-4">
+								<label><b>Company Incorporation Date</b></label> <input
+									class="form-control" type="date"
+									th:field="*{companyIncorporationDate}" readonly>
+							</div>
+							<div class="col-lg-4">
+								<label><b>Legal Constitution Type</b></label> <select
+									class="form-control"
+									th:field="*{legalConstitution.legalConstitutionId}" disabled>
+									<option th:each="legalConstitution : ${legalConstitutions}"
+										th:value="${legalConstitution.legalConstitutionId}"
+										th:text="${legalConstitution.typeOfLegalConstitution}"></option>
+								</select>
+							</div>
+							<div class="col-lg-4">
+								<label><b>PAN</b></label>
+								<div class="input-group mb-3">
+									<input type="text" class="form-control" placeholder=""
+										th:field="*{panNum}" readonly>
+									<div class="input-group-append">
+										<button class="btn text-primary" id="proposalViewButton">
+											<i class="fas fa-eye fa-lg"></i>
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-lg-4">
+								<label><b>Status Holder</b></label>&nbsp;&nbsp; <input
+									type="radio" th:value="true" th:field="${profile.statusHolder}"
+									disabled>&nbsp;Yes&nbsp; <input type="radio"
+									th:value="false" th:field="${profile.statusHolder}" disabled>&nbsp;No
+							</div>
+							<div class="col-lg-4">
+								<label><b>Is Exporter in RBI Caoution List</b></label>&nbsp;&nbsp;
+								<input type="radio" th:value="true"
+									th:field="${profile.inRbiCautionList}" disabled>&nbsp;Yes&nbsp;
+								<input type="radio" th:value="false"
+									th:field="${profile.inRbiCautionList}" disabled>&nbsp;No
+							</div>
+							<div class="col-lg-4">
+								<label><b>Is Exporter MSME</b></label>&nbsp;&nbsp; <input
+									type="radio" th:value="true" th:field="${profile.msme}"
+									disabled>&nbsp;Yes&nbsp; <input type="radio"
+									th:value="false" th:field="${profile.msme}" disabled>&nbsp;No
+							</div>
+						</div>
+						<br>
+						<div class="row">
+							<div class="col-lg-4">
+								<label><b>Is Exporter EOU</b></label>&nbsp;&nbsp; <input
+									type="radio" th:value="true" th:field="${profile.eou}" disabled>&nbsp;Yes&nbsp;
+								<input type="radio" th:value="false" th:field="${profile.eou}"
+									disabled>&nbsp;No
+							</div>
+							<div class="col-lg-4">
+								<label><b>Is Exporter SEZ</b></label>&nbsp;&nbsp; <input
+									type="radio" th:value="true" th:field="${profile.sez}" disabled>&nbsp;Yes&nbsp;
+								<input type="radio" th:value="false" th:field="${profile.sez}"
+									disabled>&nbsp;No
+							</div>
+							<div class="col-lg-4">
+								<label><b>Is EPC</b></label>&nbsp;&nbsp; <input type="radio"
+									th:value="true" th:field="${profile.epc}" disabled>&nbsp;Yes&nbsp;
+								<input type="radio" th:value="false" th:field="${profile.epc}"
+									disabled>&nbsp;No
+							</div>
+						</div>
+
+					</div>
+					
+					
+					<div class="row" id="saveDiv" hidden>
+						<div class="col-lg-8" style="display: inline-block;">
+							<label><b>Remarks</b></label>
+							<textarea class="form-control" th:field="${profile.metaRemarks}"></textarea>
+						</div>
+						<div class="col-lg-4"
+							style="display: inline-block; padding-top: 55px;">
+							<button type="button" class="btn btn-danger" id="btnCancel">Cancel</button>
+							<a class="btn btn-primary btn-icon-split" id="chgecolor"
+								onclick="$('#exporterDetailsForm').submit()"> <span
+								class="icon text-white-50"> <i class="fas fa-check"></i>
+							</span> <span class="text" style="color: white;">Save</span>
+							</a>
+							<button type="button" class="btn btn-outline-primary">Save
+								& Next</button>
+						</div>
+					</div> -->
+				</form>
+			</div>
+			<!-- Bank Details -->
+			<div class="tab-pane fade" id="profile" role="tabpanel"
+				aria-labelledby="profile-tab">
+				
+				<div class="row" style="text-align: center; margin-bottom: 0px;">
+						<div class="col-lg-12">
+							<nav
+								class="navbar navbar-expand navbar-light topbarbgcolor topbar static-top shadow "
+								style="margin-bottom: 15px;">
+
+								<button id="sidebarToggleTop"
+									class="btn btn-link d-md-none rounded-circle mr-3">
+									<i class="fa fa-bars"></i>
+								</button>
+								<span style="color: white;"><b
+									th:text="${profile.regCompanyName}"></b><b> - Bank Details</b></span>
+								<!-- Topbar Navbar -->
+							<ul class="navbar-nav ml-auto">
+								<li>
+									<button class="btn text-warning" id="btnAddNewBank"
+										type="button">
+										<i class="fas fa-plus-square fa-lg"></i>&nbsp;Add New Bank
+									</button>
+								</li>
+							</ul>
+
+						</nav>
+						</div>
+					</div>
+
+				<table class="table table-striped table-bordered hover" width="100%"
+					cellspacing="0" id="bankTable">
+					<thead>
+						<tr>
+							<th>Account No</th>
+							<th>Bank Name</th>
+							<th>IFSC</th>
+							<th>City</th>
+							<th>State</th>
+							<th>View</th>
+						</tr>
+					</thead>
+					<tfoot>
+						<tr>
+							<th>Account No</th>
+							<th>Bank Name</th>
+							<th>IFSC</th>
+							<th>City</th>
+							<th>State</th>
+							<th>View</th>
+						</tr>
+					</tfoot>
+					<tbody id="bankTableBody">
+						<tr th:each="bank : ${banks}">
+							<td th:text="${bank.accountNumber}"></td>
+							<td th:text="${bank.bankName}"></td>
+							<td th:text="${bank.ifsc}"></td>
+							<td th:text="${bank.city}"></td>
+							<td th:text="${bank.state}"></td>
+							<td>
+								<button class="btn text-primary" id="proposalViewButton"
+									onclick="viewBankDetails(this)">
+									<i class="fas fa-eye fa-lg"></i>
+								</button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<div id="bankTarget"></div>
+
+
+			</div>
+			<!-- Contact Person Details -->
+			<div class="tab-pane fade" id="contact" role="tabpanel"
+				aria-labelledby="contact-tab">
+				<!-- global form error message -->
+				<div class="alert alert-danger" role="alert" hidden
+					id="globalFormError">
+					<div class="row">
+						<div class="col-lg-12" style="text-align: center;">
+							<p style="margin-bottom: 5px;">There are errors in the form!</p>
+						</div>
+					</div>
+				</div>
+				
+				<div id="divContactUpdateSuccess" style="display:none;">
+						<div class="row" style="margin-bottom: 0px;">
+						<div class="col-lg-12" style="text-align: center;">
+							<div class="alert alert-success alert-dismissible fade show" style="margin-bottom:0px;" role="alert">
+							  Contact Updated Successfully!
+							  <button type="button" class="close"  
+							  onclick='$("#divContactUpdateSuccess").hide()' id="btnDissmiss">
+							    <span aria-hidden="true">&times;</span>
+							  </button>
+							</div>
+						</div>
+					</div><hr>
+					</div>
+					
+				<div id="divContactAddedSuccess" style="display:none;">
+						<div class="row" style="margin-bottom: 0px;">
+						<div class="col-lg-12" style="text-align: center;">
+							<div class="alert alert-success alert-dismissible fade show" style="margin-bottom:0px;" role="alert">
+							  Contact Added Successfully!
+							  <button type="button" class="close"
+							  onclick='$("#divContactAddedSuccess").hide()' id="btnDissmiss">
+							    <span aria-hidden="true">&times;</span>
+							  </button>
+							</div>
+						</div>
+					</div><hr>
+					</div>	
+				
+					
+				<nav class="navbar navbar-expand-md navbar-light" style="padding-left:3px; padding-top:0px; margin-bottom:15px;">
+					
+					<div class="collapse navbar-collapse" id="navbarNav">
+						<ul class="navbar-nav mr-auto nav-pills">
+							<li class="nav-item">
+								<a type="button" class="nav-link active text-light" id="btnContact1">Contact 1</a>
+							</li>
+							<li class="nav-item" style="margin-left:20px;">
+								<a type="button" class="nav-link" style="" id="btnContact2">Contact 2</a>
+							</li>
+							
+						</ul>
+						<ul class="navbar-nav" th:if="${contact2 == null}">
+							<li class="nav-item"><a id="btnAddNewContact"
+								class="btn btn-success btn-icon-split"> <span
+									class="icon text-white-50"> <i class="fas fa-plus"></i>
+								</span> <span class="text" style="color: white;">Add Contact</span>
+							</a></li>
+						</ul>
+					</div>
+				</nav>
+				
+				<script>
+					$(document).ready(function(){
+						$("#btnContact2").click(function(){
+							console.log('clicked');
+							$("#btnContact1").removeClass().addClass('nav-link');
+							$("#btnContact2").addClass('nav-link active text-light');
+							$("#contact1").hide();
+							$("#contact2").fadeIn(700);
+						});
+						
+						$("#btnContact1").click(function(){
+							console.log('clicked');
+							$("#btnContact2").removeClass().addClass('nav-link');
+							$("#btnContact1").addClass('nav-link active text-light');
+							$("#contact2").hide();
+							$("#contact1").fadeIn(700);
+						});
+						
+						
+					});
+					
+					$("#btnAddNewContact").click(function(){
+						console.log('add new contact');
+						var exporterCode = $('#exporterCode').val();
+						var ieCode = $('#ieCode').val();
+						$("#noContactAlert").hide();
+						$(this).attr('disabled', true);
+						$("#contact2Div").hide();
+						$("#contact2Div").load("contact/new/"+exporterCode+"/"+ieCode);
+						
+						$("#btnContact2").trigger('click');
+						$("#contact2Div").fadeIn(700);
+					});
+				</script>
+				
+				<div id="contact1">
+					<form th:object="${contact1}"
+					th:action="@{/exporter/profile/contact/update}" id="formContact1"
+					method="post">
+					<div class="row" style="text-align: center; margin-bottom: 0px;">
+						<div class="col-lg-12">
+							<nav
+								class="navbar navbar-expand navbar-light topbarbgcolor topbar static-top shadow "
+								style="margin-bottom: 15px;">
+
+								<button id="sidebarToggleTop"
+									class="btn btn-link d-md-none rounded-circle mr-3">
+									<i class="fa fa-bars"></i>
+								</button>
+								<span style="color: white;"><b
+									th:text="${contact1.name}"></b>&nbsp;<font th:if="${contact1.location == 'REG'}">- Registered Address</font>
+									&nbsp;<font th:if="${contact1.location == 'CORR'}">- Correspondence Address</font>
+									</span>
+									
+								<!-- Topbar Navbar -->
+								<ul class="navbar-nav ml-auto">
+									<li style="padding-top: 5px;"><span
+										class="badge badge-light"> Last Updated By: </span> <span
+										class="text-light" th:text="${contact1.lastUpdatedBy}">
+									</span> <span class="text-light"
+										th:if="${contact1.lastUpdatedBy == null}"> N.A. </span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									</li>
+									<li style="padding-top: 5px;"><span
+										class="badge badge-light"> Last Updated Date: </span> <span
+										class="text-light" th:text="${contact1.lastUpdatedDate}">
+									</span> <span class="text-light"
+										th:if="${contact1.lastUpdatedDate == null}"> N.A. </span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									</li>
+									<li style="padding-top: 5px;"><a href="#"
+										style="color: #f6c23e;">View Update History</a>&nbsp;&nbsp;&nbsp;
+									</li>
+									<li>
+										<button class="btn text-warning" id="btnEditContact" onclick="editContact('formContact1',this)"
+										type="button">
+										<i class="fas fa-edit fa-lg"></i>Edit
+									</button>
+									<button class="btn btn-warning btn-sm" id="btnEditingContact"  style="pointer-events:none;"
+										hidden="true">[Editing]</button>
+									</li>
+								</ul>
+
+							</nav>
+						</div>
+					</div>
+
+					<div class="row" style="margin-bottom: 10px; text-align: center;">
+						<div class="col-lg-2" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Location:</b></label>
+						</div>
+						<div class="col-lg-4" style="text-align: left;">
+							<select class="form-control" th:field="${contact1.location}"
+										disabled>
+										<option value="">Select</option>
+										<option th:value="REG" th:text="'Registered Address'"></option>
+										<option th:value="CORR" th:text="'Correspondence Address'"></option>
+							</select>
+							<div style="margin-bottom: 10px;"
+								id="locationError" hidden="true">
+								<div class="col-lg-3"></div>
+								<div class="col-lg-8">
+									<label class="text-danger"></label>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-2" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Name:</b></label>
+						</div>
+						<div class="col-lg-4" style="text-align: left;">
+							<input type="text" th:field="${contact1.exporterCode}"
+										hidden="true"> <input type="text"
+										th:field="${contact1.contactPersonId}" hidden="true">
+									<input type="text" th:field="${contact1.contactPersonId}"
+										hidden="true">	
+									<input type="text" class="form-control" readonly
+										th:field="${contact1.name}">
+							<div style="margin-bottom: 10px;"
+								id="nameError" hidden="true">
+								<div class="col-lg-3"></div>
+								<div class="col-lg-8">
+									<label class="text-danger"></label>
+								</div>
+							</div>			
+						</div>
+					</div>
+
+					<div class="row" style="margin-bottom: 10px; text-align: center;">
+						<div class="col-lg-2" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Designation:</b></label>
+						</div>
+						<div class="col-lg-4" style="text-align: left;">
+							<input type="text" class="form-control" readonly
+										th:field="${contact1.designation}">
+							<div style="margin-bottom: 10px;"
+								id="designationError" hidden="true">
+								<div class="col-lg-3"></div>
+								<div class="col-lg-8">
+									<label class="text-danger"></label>
+								</div>
+							</div>			
+						</div>
+						<div class="col-lg-2" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Office Telephone:</b></label>
+						</div>
+						<div class="col-lg-4" style="text-align: left;">
+							<input type="text" class="form-control" readonly
+										th:field="${contact1.officeNo}"> <label
+										th:if="${#fields.hasErrors('officeNo')}"
+										th:errors="*{officeNo}" class="text-danger"> </label>
+						</div>
+					</div>
+					
+					<div class="row" style="margin-bottom: 10px; text-align: center;">
+						<div class="col-lg-2" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Office Extension:</b></label>
+						</div>
+						<div class="col-lg-4" style="text-align: left;">
+							<input type="text" class="form-control" readonly
+										th:field="${contact1.officeNoExt}">
+						</div>
+						<div class="col-lg-2" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Mobile:</b></label>
+						</div>
+						<div class="col-lg-3" style="text-align: left;">
+							<input type="text" class="form-control" readonly onInput="mobileInput(this)" 
+										th:field="${contact1.mobile}">
+							<div style="margin-bottom: 10px;"
+								id="mobileError" hidden="true">
+								<div class="col-lg-3"></div>
+								<div class="col-lg-8">
+									<label class="text-danger"></label>
+								</div>
+							</div>				
+						</div>
+						<div class="col-lg-1" th:if="${contact1.emailVerified == true}"
+									id="mobileStatus">
+									<label class="text-success" style="margin-top: 7px;">Verified</label>
+								</div>
+						<div class="col-lg-1" hidden=true id="verifyMobileButton">
+									<button type="button" class="btn btn-primary"
+										style="float: right;">Verify</button>
+								</div>
+					</div>
+					
+					<div class="row" style="margin-bottom: 10px; text-align: center;">
+						<div class="col-lg-2" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Email:</b></label>
+						</div>
+						<div class="col-lg-3" style="text-align: left;">
+							<input type="text" class="form-control" readonly onInput="emailInput(this)"
+										th:field="${contact1.emailId}">
+							<div style="margin-bottom: 10px;"
+								id="emailError" hidden="true">
+								<div class="col-lg-3"></div>
+								<div class="col-lg-8">
+									<label class="text-danger"></label>
+								</div>
+							</div>				
+						</div>
+						<div class="col-lg-1" th:if="${contact1.emailVerified == true}"
+									id="emailStatus">
+									<label class="text-success" style="margin-top: 7px;">Verified</label>
+						</div>
+						<div class="col-lg-2" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Status:</b></label>
+						</div>
+						<div class="col-lg-4" style="text-align: left;">
+							<select class="form-control" th:field="${contact1.status}"
+										disabled>
+										<option th:value="I" th:text="Inactive"></option>
+										<option th:value="V" th:text="Active"></option>
+									</select>
+						</div>
+					</div>
+					
+					<div id="saveContactDiv" style="display: none;">
+								<div class="row" style="margin-bottom: 10px;">
+									<div class="col-lg-2">
+										<label style="margin-top: 6px;"><b>Remarks:</b></label>
+									</div>
+									<div class="col-lg-10">
+										<textarea class="form-control"
+											th:field="${contact1.metaRemarks}"></textarea>
+									</div>
+								</div>
+								<!-- Remarks error message -->
+								<div class="row validationError" style="margin-bottom: 10px;"
+									id="remarksError" hidden="true">
+									<div class="col-lg-3"></div>
+									<div class="col-lg-8">
+										<label class="text-danger"></label>
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-lg-12">
+										<a class="btn btn-primary btn-icon-split float-right"
+											type="button" onclick="validateContact('formContact1')"> <span
+											class="icon text-white-50"> <i class="fas fa-check"></i>
+										</span> <span class="text" style="color: white;">Save</span>
+										</a>
+										<button type="button" class="btn btn-danger float-right" onclick="cancelContactEditing('formContact1')"
+											style="margin-right: 10px;" id="btnCancelContact1">
+											Cancel</button>
+									</div>
+								</div>
+							</div>
+				</form>
+				</div>
+				
+				<div id="contact2" style="display:none;">
+					<div class="row" style="margin-bottom: 10px;" id="noContactAlert">
+							<div class="col-lg-12" th:if="${contact2 == null}">
+								<div class="alert alert-danger" role="alert">
+									<div class="row">
+										<div class="col-lg-6">
+											<p style="margin-bottom: 5px;">
+												<b>No Details found!</b>
+											</p>
+											<p style="margin-bottom: 5px;">Please add details of
+												contact person</p>
+										</div>
+									</div>
+
+								</div>
+							</div>
+						</div>
+						
+					<!-- Form for contact person 2 will be loaded here-->
+				<div id="contact2Div" style="display:none;"></div>
+				
+				
+				
+				
+				<!-- Will be loaded only if the second contact person is added -->
+				<form th:object="${contact2}" th:if="${contact2 != null}"
+					th:action="@{/exporter/profile/contact/update}" id="formContact2"
+					method="post">
+					<div class="row" style="text-align: center; margin-bottom: 0px;">
+						<div class="col-lg-12">
+							<nav
+								class="navbar navbar-expand navbar-light topbarbgcolor topbar static-top shadow "
+								style="margin-bottom: 15px;">
+
+								<button id="sidebarToggleTop"
+									class="btn btn-link d-md-none rounded-circle mr-3">
+									<i class="fa fa-bars"></i>
+								</button>
+								<span style="color: white;"><b
+									th:text="${contact2.name}"></b>&nbsp;<font th:if="${contact2.location == 'REG'}">- Registered Address</font>
+									&nbsp;<font th:if="${contact2.location == 'CORR'}">- Correspondence Address</font>
+									</span>
+								<ul class="navbar-nav ml-auto">
+									<li style="padding-top: 5px;"><span
+										class="badge badge-light"> Last Updated By: </span> <span
+										class="text-light" th:text="${contact2.lastUpdatedBy}">
+									</span> <span class="text-light"
+										th:if="${contact2.lastUpdatedBy == null}"> N.A. </span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									</li>
+									<li style="padding-top: 5px;"><span
+										class="badge badge-light"> Last Updated Date: </span> <span
+										class="text-light" th:text="${contact2.lastUpdatedDate}">
+									</span> <span class="text-light"
+										th:if="${contact2.lastUpdatedDate == null}"> N.A. </span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									</li>
+									<li style="padding-top: 5px;"><a href="#"
+										style="color: #f6c23e;">View Update History</a>&nbsp;&nbsp;&nbsp;
+									</li>
+									<li>
+										<button class="btn text-warning" id="btnEditContact" onclick="editContact('formContact2',this)"
+										type="button">
+										<i class="fas fa-edit fa-lg"></i>Edit
+									</button>
+									<button class="btn btn-warning btn-sm" id="btnEditingContact"  style="pointer-events:none;"
+										hidden="true">[Editing]</button>
+									</li>
+								</ul>
+
+							</nav>
+						</div>
+					</div>
+
+					<div class="row" style="margin-bottom: 10px; text-align: center;">
+						<div class="col-lg-2" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Location:</b></label>
+						</div>
+						<div class="col-lg-4" style="text-align: left;">
+							<select class="form-control" th:field="${contact2.location}"
+										disabled>
+										<option value="">Select</option>
+										<option th:value="REG" th:text="'Registered Address'"></option>
+										<option th:value="CORR" th:text="'Correspondence Address'"></option>
+							</select>
+							<div style="margin-bottom: 10px;"
+								id="locationError" hidden="true">
+								<div class="col-lg-3"></div>
+								<div class="col-lg-8">
+									<label class="text-danger"></label>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-2" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Name:</b></label>
+						</div>
+						<div class="col-lg-4" style="text-align: left;">
+							<input type="text" th:field="${contact2.exporterCode}"
+										hidden="true"> <input type="text"
+										th:field="${contact2.contactPersonId}" hidden="true">
+									<input type="text" th:field="${contact2.contactPersonId}"
+										hidden="true">	
+									<input type="text" class="form-control" readonly
+										th:field="${contact2.name}">
+							<div style="margin-bottom: 10px;"
+								id="nameError" hidden="true">
+								<div class="col-lg-3"></div>
+								<div class="col-lg-8">
+									<label class="text-danger"></label>
+								</div>
+							</div>			
+						</div>
+					</div>
+
+					<div class="row" style="margin-bottom: 10px; text-align: center;">
+						<div class="col-lg-2" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Designation:</b></label>
+						</div>
+						<div class="col-lg-4" style="text-align: left;">
+							<input type="text" class="form-control" readonly
+										th:field="${contact2.designation}">
+							<div style="margin-bottom: 10px;"
+								id="designationError" hidden="true">
+								<div class="col-lg-3"></div>
+								<div class="col-lg-8">
+									<label class="text-danger"></label>
+								</div>
+							</div>			
+						</div>
+						<div class="col-lg-2" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Office Telephone:</b></label>
+						</div>
+						<div class="col-lg-4" style="text-align: left;">
+							<input type="text" class="form-control" readonly
+										th:field="${contact2.officeNo}"> <label
+										th:if="${#fields.hasErrors('officeNo')}"
+										th:errors="*{officeNo}" class="text-danger"> </label>
+						</div>
+					</div>
+					
+					<div class="row" style="margin-bottom: 10px; text-align: center;">
+						<div class="col-lg-2" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Office Extension:</b></label>
+						</div>
+						<div class="col-lg-4" style="text-align: left;">
+							<input type="text" class="form-control" readonly
+										th:field="${contact2.officeNoExt}">
+						</div>
+						<div class="col-lg-2" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Mobile:</b></label>
+						</div>
+						<div class="col-lg-3" style="text-align: left;">
+							<input type="text" class="form-control" readonly onInput="mobileInput(this)" 
+										th:field="${contact2.mobile}">
+							<div style="margin-bottom: 10px;"
+								id="mobileError" hidden="true">
+								<div class="col-lg-3"></div>
+								<div class="col-lg-8">
+									<label class="text-danger"></label>
+								</div>
+							</div>				
+						</div>
+						<div class="col-lg-1" th:if="${contact2.emailVerified == true}"
+									id="mobileStatus">
+									<label class="text-success" style="margin-top: 7px;">Verified</label>
+								</div>
+						<div class="col-lg-1" hidden=true id="verifyMobileButton">
+									<button type="button" class="btn btn-primary"
+										style="float: right;">Verify</button>
+								</div>
+					</div>
+					
+					<div class="row" style="margin-bottom: 10px; text-align: center;">
+						<div class="col-lg-2" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Email:</b></label>
+						</div>
+						<div class="col-lg-3" style="text-align: left;">
+							<input type="text" class="form-control" readonly onInput="emailInput(this)"
+										th:field="${contact2.emailId}">
+							<div style="margin-bottom: 10px;"
+								id="emailError" hidden="true">
+								<div class="col-lg-3"></div>
+								<div class="col-lg-8">
+									<label class="text-danger"></label>
+								</div>
+							</div>				
+						</div>
+						<div class="col-lg-1" th:if="${contact2.emailVerified == true}"
+									id="emailStatus">
+									<label class="text-success" style="margin-top: 7px;">Verified</label>
+						</div>
+						<div class="col-lg-2" style="text-align: left;">
+							<label style="margin-top: 7px;"><b>Status:</b></label>
+						</div>
+						<div class="col-lg-4" style="text-align: left;">
+							<select class="form-control" th:field="${contact2.status}"
+										disabled>
+										<option th:value="I" th:text="Inactive"></option>
+										<option th:value="V" th:text="Active"></option>
+									</select>
+						</div>
+					</div>
+					
+					
+					
+					<div id="saveContactDiv" style="display: none;">
+								<div class="row" style="margin-bottom: 10px;">
+									<div class="col-lg-2">
+										<label style="margin-top: 6px;"><b>Remarks:</b></label>
+									</div>
+									<div class="col-lg-10">
+										<textarea class="form-control"
+											th:field="${contact2.metaRemarks}"></textarea>
+									</div>
+								</div>
+								<div class="row validationError" style="margin-bottom: 10px;"
+									id="remarksError" hidden="true">
+									<div class="col-lg-3"></div>
+									<div class="col-lg-8">
+										<label class="text-danger"></label>
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-lg-12">
+										<a class="btn btn-primary btn-icon-split float-right"
+											type="button" onclick="validateContact('formContact2')"> <span
+											class="icon text-white-50"> <i class="fas fa-check"></i>
+										</span> <span class="text" style="color: white;">Save</span>
+										</a>
+										<button type="button" class="btn btn-danger float-right" onclick="cancelContactEditing('formContact2')"
+											style="margin-right: 10px;" id="btnCancelContact2">
+											Cancel</button>
+									</div>
+								</div>
+							</div>
+				</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<br>

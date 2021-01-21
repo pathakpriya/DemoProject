@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout}">
+<head>
+<meta charset="ISO-8859-1"/>
+<title>shipment declaration</title>
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script>
+$(document).ready(function(){
+	
+	$('#selectButton').click(function(){
+		console.log("*****")
+		var policy = $(this).closest('tr').find('td:eq(2)').text().trim();
+		var policyNo = $(this).closest('tr').find('td:eq(1)').text().trim();
+		alert(policy);
+		console.log(policy);
+		if(policy == "SCR"){
+			window.location.replace("/shipmentDeclaration?policyNo="+policyNo);
+		}
+	});
+});
+</script>
+</head>
+<body>
+<div id="page-wrapper" layout:fragment="content">
+		<div class="card shadow mb-4 mt-2 border-left-info">
+
+			<!--card header-->
+			<div class="card-header py-3 ">
+				<div class="form -group row">
+					<div class="col-sm-12 mb-3 mb-sm-0">
+					
+						<h6 class="m-0 font-weight-bold text-primary" id="datatables">Add Shipment Declaration</h6>
+					</div>
+					<!-- <div class="d-flex flex-row-reverse"> -->
+
+				</div>
+			</div>
+			<!--end of card header-->
+			<div class="card-body">
+			
+			<p>
+					<strong>Select Policy Number from the list to provide Shipment Declaration</strong>
+				</p>
+			
+
+				<div class="table-responsive">
+ 					<table class="table table-bordered "
+						id="example1" width="100%" cellspacing="0">
+
+						<thead>
+							<tr>
+								<th>No.</th>
+								<th>Policy Number</th>
+								<th>Policy Type</th>
+								<th>Link</th>
+							</tr>
+						</thead>
+
+						
+						<tbody>
+						
+						
+						<!--<tr th:each="shipment: ${shipments}">
+							<td th:text=$"{}"></td>
+							<td th:text="${}"></td>
+							<td th:text="${}"></td>
+						<td><form action="#" th:action="@{/shipmentDeclaration}" th:object="${Fields}" method="post">
+									<div> <input type="text"  hidden="true"   th:field="*{polnum}" ></div>
+									<div> <input type="text" hidden="true"   th:field="*{polType}" ></div>
+									 <input type="submit"
+							class="btn custom-smile-btn-submit ml-1 mr-1" value="select"></input></form>
+								
+								
+								</td>
+						     -->
+							<tr>
+								<td>1</td>
+								<td>41234</td>
+								<td>
+								<strong>SCR</strong>
+									
+								</td>
+								<td> <button type="submit" class="btn custom-smile-btn-submit ml-1 mr-1" id="selectButton" value="select">Select</button>
+								
+								
+								</td>
+							</tr>
+				<!--  			<tr>
+								<td>2</td>
+								<td>41236</td>
+								<td>
+									<strong>SCR</strong>
+								</td>
+								<td><form th:action="@{/shipmentDeclaration}" th:object="${shipmentDetails}" method="post">
+									<div> <input type="text" value="2" hidden="true"></div>
+									<div> <input type="text" value="41236" hidden="true"></div>
+									 <input type="submit"
+							class="btn custom-smile-btn-submit ml-1 mr-1" value="select"></input></form>
+								
+								
+								</td>
+							</tr>
+				-->
+				
+
+							
+						</tbody>
+					</table>
+
+				 </div> 
+				<!-- table responsive  </div> -->
+			</div>
+		</div>
+
+		<!-- ACTUAL BODY CONTENT -->
+
+	</div>
+
+
+	<th:block layout:fragment="scripts">
+  		<!-- Data Tables -->
+	<script type="text/javascript" th:src="@{/webjars/startbootstrap-sb-admin-2/vendor/datatables/jquery.dataTables.min.js}"></script>
+	<script type="text/javascript" th:src="@{/webjars/startbootstrap-sb-admin-2/vendor/datatables/dataTables.bootstrap4.min.js}"></script>
+	<script type="text/javascript" th:src="@{/webjars/datatables-buttons/js/dataTables.buttons.min.js}"></script>
+	<script type="text/javascript" th:src="@{/webjars/datatables-buttons/js/buttons.html5.min.js}"></script>
+	<script type="text/javascript" th:src="@{/webjars/datatables-buttons/js/buttons.print.min.js}"></script>
+	<script type="text/javascript" th:src="@{/js/datatablejs/pdfmake.min.js}"></script>
+	<script type="text/javascript" th:src="@{/js/datatablejs/vfs_fonts.js}"></script>
+	<script type="text/javascript" th:src="@{/js/exporttable.js}"></script>
+	<script type="text/javascript" th:src="@{/js/buttonbootstrap4.js}"></script>
+  	
+	
+	</th:block>
+</body>
+</html>
